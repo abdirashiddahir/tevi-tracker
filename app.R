@@ -427,8 +427,7 @@ status_label <- function(op, ps) ifelse(grepl("Existing", ps), "Existing DCFC",
 
 # ---- Station-type & confidence labels/colors (shared with the Scenario tool) --
 TYPE_LABELS <- c("Coming_Soon" = "Coming Soon", "NEVI Awarded Sites" = "NEVI Awarded",
-                 "NEVI_Creditable_Stations" = "NEVI Creditable",
-                 "Tesla_Supercharger" = "Tesla", "Indiana R2 NEVI Proposals" = "R2 Proposal")
+                 "Open_Creditable" = "Open (Creditable)", "Other_DCFC" = "Existing DCFC")
 type_label <- function(ds) {
   ds <- as.character(ds); lbl <- unname(TYPE_LABELS[ds])
   ifelse(is.na(lbl), ifelse(nzchar(ds), ds, "Coming Soon"), lbl)
@@ -605,7 +604,7 @@ app_sidebar <- sidebar(width = 300, title = "Filters & actions", open = "open",
   tags$p(class = "text-muted small mt-2", textOutput("last_check_txt")),
   div(class = "sidebar-logos",
     tags$img(src = "TDOT_logo.png", alt = "Tennessee Department of Transportation"),
-    tags$img(src = "hntb_logo.png", alt = "HNTB")))
+    tags$span(class = "logo-chip", tags$img(src = "hntb_logo.png", alt = "HNTB"))))
 
 main_ui <- page_navbar(
   title = tags$span(bs_icon("ev-station-fill", class = "me-2", style = "color:#fff;"),
@@ -627,6 +626,12 @@ main_ui <- page_navbar(
       card_header(tags$span("Editable station log — saved to SQLite, shared across users"),
         tags$span(class = "ms-auto", downloadButton("dl_csv", "Export CSV", class = "btn btn-sm btn-outline-primary"))),
       div(class = "p-2",
+        div(class = "tbl-layer-bar",
+          tags$span(class = "fw-bold small", "Layer:"),
+          selectInput("tbl_layer", NULL, width = "230px",
+            choices = c("All layers" = "all", "Coming Soon" = "Coming_Soon",
+                        "Awarded" = "NEVI Awarded Sites", "Open (Creditable)" = "Open_Creditable",
+                        "Existing DCFC" = "Other_DCFC"), selected = "all")),
         helpText("Double-click PlugShare status / Operational / Network / Ports / Notes to edit."),
         withSpinner(DTOutput("tbl"), color = INDOT$navy, type = 8)))),
 
@@ -825,7 +830,7 @@ login_overlay <- div(class = "login-wrap", id = "login-overlay",
   div(class = "login-card",
     div(class = "login-logos",
       tags$img(src = "TDOT_logo.png", class = "login-logo", alt = "Tennessee Department of Transportation"),
-      tags$img(src = "hntb_logo.png", class = "login-logo", alt = "HNTB")),
+      tags$span(class = "logo-chip", tags$img(src = "hntb_logo.png", class = "login-logo", alt = "HNTB"))),
     div(class = "login-title", "TEVI Tracker"),
     div(class = "login-sub", "Tennessee NEVI Program"),
     div(class = "login-body",
@@ -1056,6 +1061,8 @@ server <- function(input, output, session) {
   # ---- Tracker ----
   dt_df <- reactive({
     m <- merged()
+    if (!is.null(input$tbl_layer) && input$tbl_layer != "all")
+      m <- m[!is.na(m$data_source) & m$data_source == input$tbl_layer, , drop = FALSE]
     # The displayed "Operational" column reflects the TRUE operational state: a station counts as
     # operational if flagged in master_Data.csv (Schmidt, Pilot Greenfield, BIC) or confirmed in the
     # tracker. This is what drives the green row highlight below (so BIC's row is green too, even
@@ -1206,6 +1213,7 @@ server <- function(input, output, session) {
       div(class = "review-card",
         div(class = "rc-head",
           span(class = "rc-badge", "NEEDS REVIEW"),
+          span(class = "rc-badge rc-layer", toupper(type_label(r$data_source))),
           div(class = "rc-headtext",
               tags$div(class = "rc-name", r$station_name),
               tags$div(class = "rc-addr", r$address))),
@@ -1226,7 +1234,7 @@ server <- function(input, output, session) {
             tags$div(class = "rc-step",
               tags$span(class = "rc-stepnum", "2"),
               tags$div(tags$b("Confirm."),
-                " This marks it Operational and pushes it to the Scenario Analysis tool’s Post-March 2026 layer.")))),
+                " This marks the station Operational in the tracker.")))),
         div(class = "rc-actions",
           if (r$plugshare_url != "")
             tags$a(class = "btn btn-sm btn-outline-primary", href = r$plugshare_url,
