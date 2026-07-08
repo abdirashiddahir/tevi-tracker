@@ -1,0 +1,41 @@
+# ---- Secrets — NEVER commit ----
+credentials.R
+.Renviron
+*.pem
+*.key
+**/secrets*
+
+# ---- Live database (recreated on first run; don't commit working data) ----
+*.sqlite
+*.sqlite3
+data/tracker_store.sqlite
+
+# ---- Local backups (never commit) ----
+*.bak
+*.bak[0-9]
+*.bak[0-9][0-9]
+
+# ---- R session / build artifacts ----
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+rsconnect/
+
+# ---- Temp / scratch files used during development ----
+_*.R
+_sm_*.png
+crops/
+crop_*.R
+ocr_*.R
+
+# ---- OS noise ----
+.DS_Store
+Thumbs.db
+
+# TN working files (not part of the deployable app)
+TEVI reference materials/
+TEVI_Awarded_Missing_PlugShare.xlsx
+*.xlsx
+data/tracker_store.sqlite
+_*.log

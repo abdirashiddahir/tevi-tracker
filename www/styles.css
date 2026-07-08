@@ -1,0 +1,293 @@
+/* =============================================================================
+   Coming Soon Tracker — INDOT theme on bslib (Bootstrap 5)
+   Design language adopted from the NEVI National Dashboard.
+   ============================================================================= */
+:root{
+  --navy:#00205B; --navy-dark:#00163E; --gold:#EF3E33; --gold-d:#C42D24;
+  --bg:#F4F6FA; --muted:#6B7280; --border:#E5E7EB;
+  --green:#2E7D32; --teal:#17A2B8; --amber:#E8910C; --red:#DC3545; --gray:#75787B;
+}
+
+/* ---- Review tab (flagged-candidate queue) ---- */
+.review-intro{display:flex;gap:10px;align-items:flex-start;background:#fff7e8;
+  border:1px solid #f3d49a;border-radius:10px;padding:11px 14px;margin:4px 0 16px;
+  font-size:13.5px;color:#5b4a22;line-height:1.5}
+.review-intro code{background:#fdeccf;color:#8a5a00;padding:1px 5px;border-radius:4px;font-size:.85em}
+.review-empty{display:flex;gap:12px;align-items:center;color:var(--muted);
+  background:#f2faf4;border:1px solid #cdeccf;border-radius:12px;padding:18px 20px}
+.review-empty .muted{font-size:13px;color:var(--muted);margin-top:3px;font-weight:400}
+.review-card{border:1px solid var(--border);border-left:5px solid var(--amber);border-radius:12px;
+  background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.05);padding:14px 18px;margin-bottom:12px}
+.review-card .rc-head{display:flex;gap:11px;align-items:flex-start}
+.review-card .rc-dot{width:12px;height:12px;border-radius:50%;margin-top:5px;flex:none;
+  box-shadow:0 0 0 4px rgba(232,145,12,.18)}
+.review-card .rc-name{font-weight:800;color:var(--navy-dark);font-size:15px;line-height:1.2}
+.review-card .rc-addr{color:var(--muted);font-size:12px;margin-top:1px}
+.review-card .rc-body{margin:9px 0 12px}
+.review-card .rc-meta{font-size:12px;color:#46506180;color:#465061;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.review-card .rc-sep{color:#c5ccd6}
+.review-card .rc-hint{font-size:12px;color:#7a6320;background:#fff8ec;border-radius:8px;
+  padding:7px 10px;margin-top:8px;line-height:1.45}
+.review-card .rc-actions{display:flex;gap:8px;flex-wrap:wrap}
+.review-card .rc-actions .btn{font-weight:600}
+/* ---- enterprise review-card additions ---- */
+.review-card .rc-badge{flex:none;font-size:10px;font-weight:800;letter-spacing:.6px;color:#8a5a00;
+  background:#fff1d6;border:1px solid #f3d79a;border-radius:999px;padding:3px 9px;margin-top:2px}
+.review-card .rc-headtext{min-width:0}
+.review-card .rc-chip{font-size:11.5px;font-weight:600;color:#465061;background:#f2f5f9;
+  border:1px solid var(--border);border-radius:999px;padding:3px 10px}
+.review-card .rc-steps{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.review-card .rc-step{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;color:#3a4453;line-height:1.4}
+.review-card .rc-step b{color:var(--navy-dark)}
+.review-card .rc-stepnum{flex:none;width:20px;height:20px;border-radius:50%;background:var(--navy);
+  color:#fff;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;margin-top:1px}
+body{background:var(--bg)}
+
+/* Navbar */
+.navbar{box-shadow:0 1px 4px rgba(0,0,0,.10)}
+.navbar-brand{font-weight:700;letter-spacing:.2px}
+.navbar .nav-link{color:rgba(255,255,255,.85)}
+.navbar .nav-link.active,.navbar .nav-link:hover{
+  color:var(--gold)!important;background-color:rgba(255,255,255,.06)}
+
+/* Sidebar */
+.bslib-sidebar-layout>.sidebar{background:#fff;border-right:1px solid var(--border)}
+.filter-label{font-size:.78rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.4px;color:var(--navy-dark);margin-bottom:.3rem;display:block}
+.filter-section{margin-bottom:1rem}
+
+/* Cards */
+.card{border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.04);border-radius:10px}
+.card-header{background:#fff;border-bottom:2px solid var(--gold);font-weight:700;
+  color:var(--navy-dark);font-size:.95rem}
+
+/* Value boxes */
+.value-box .value-box-title{font-size:.74rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.4px;opacity:.92}
+.value-box .value-box-value{font-size:1.9rem;font-weight:800;line-height:1.1}
+.value-box p{margin:.2rem 0 0 0;font-size:.78rem;opacity:.85}
+
+/* DataTable theme */
+table.dataTable thead th{background:var(--navy);color:#fff;border-bottom:2px solid var(--gold)}
+table.dataTable tbody tr:hover{background:#EEF2FB}
+/* Operational rows: whole row PERMANENTLY light green (class added via DT rowCallback).
+   !important + cell-level rule beat DataTables' hover/stripe so the green never disappears. */
+table.dataTable tbody tr.op-row-green,
+table.dataTable tbody tr.op-row-green td,
+table.dataTable tbody tr.op-row-green:hover,
+table.dataTable tbody tr.op-row-green:hover td{
+  background:#d6f5e0 !important;
+}
+table.dataTable tbody tr.op-row-green td:first-child{
+  border-left:4px solid #2E7D32;
+}
+.dt-buttons .btn{background:var(--navy);color:#fff;border:none}
+.dt-buttons .btn:hover{background:var(--navy-dark)}
+
+/* Leaflet legend polish */
+.info.legend{border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.15);
+  padding:8px 12px;background:rgba(255,255,255,.96);font-size:.8rem}
+/* Status legend: pushed DOWN from the top-right ESRI layers control so it sits a bit
+   toward the middle-right with breathing room (not crammed against the radio buttons). */
+.status-legend{margin-top:90px !important;margin-right:6px !important}
+
+/* ---- PlugShare-style panel (left side of PlugShare tab) ---- */
+.ps-panel{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#fff;
+  box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.ps-panel .ps-head{background:linear-gradient(135deg,var(--navy),#0a4aa0);color:#fff;padding:16px 18px}
+.ps-panel .ps-head h3{margin:0;font-size:18px;font-weight:700;line-height:1.2}
+.ps-panel .ps-head .ps-sub{color:#cdd9f0;font-size:12.5px;margin-top:4px}
+.ps-status{display:inline-block;margin-top:10px;padding:4px 12px;border-radius:999px;
+  font-size:12px;font-weight:800;color:#fff}
+.st-op{background:var(--green)} .st-cs{background:var(--teal)}
+.st-nf{background:var(--gray)} .st-ur{background:var(--red)} .st-rv{background:var(--amber)}
+.ps-body{padding:14px 18px}
+.ps-line{display:flex;justify-content:space-between;gap:14px;padding:8px 0;
+  border-bottom:1px solid var(--border);font-size:13.5px}
+.ps-line .k{color:var(--muted);font-weight:600} .ps-line .v{font-weight:700;color:#1d2633;text-align:right}
+.ps-plug{display:inline-flex;align-items:center;gap:6px;background:#eef2f8;color:#33415c;
+  border-radius:6px;padding:2px 9px;font-size:11.5px;font-weight:700;margin:2px 4px 2px 0}
+.ps-open{display:inline-block;margin-top:14px;background:var(--navy);color:#fff!important;
+  text-decoration:none;font-weight:700;padding:10px 16px;border-radius:9px;font-size:13.5px}
+.ps-open:hover{background:var(--navy-dark)}
+.ps-note{font-size:11.5px;color:var(--muted);margin-top:10px;font-style:italic}
+.ps-checked{font-size:11.5px;color:var(--muted);margin-top:6px}
+
+/* ---- PlugShare tab: left detail column ---- */
+.ps-side{padding:2px 2px 0}
+.ps-empty{display:flex;gap:12px;align-items:flex-start;color:var(--muted);
+  background:#fff;border:1px dashed var(--border);border-radius:12px;padding:20px 18px}
+.ps-empty .muted{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.5}
+
+.live-banner{background:#fff7df;border:1px solid var(--gold);border-radius:8px;
+  padding:9px 13px;font-size:13px;color:var(--navy-dark);margin-bottom:10px}
+.btn-gold{background:var(--gold);color:#fff;border:none;font-weight:700}
+.btn-gold:hover{background:var(--gold-d);color:var(--navy-dark)}
+.about-pane h4{color:var(--navy-dark);margin-top:1.1rem;font-size:1rem}
+.about-pane code{font-size:.78rem;background:#F0F2F7;color:#B1003E;padding:2px 5px;border-radius:3px}
+
+/* ============================================================================
+   Login gate — INDOT-themed full-screen OVERLAY (covers the app until sign-in)
+   No-flash strategy: the overlay is in the static HTML and visible BY DEFAULT, and
+   the real app is hidden until the <body> gets the `app-authed` class (added by the
+   server after login). So the app is never shown before authentication.
+   ============================================================================ */
+/* Before login: hide the app, show the overlay. */
+body:not(.app-authed) .navbar,
+body:not(.app-authed) .bslib-page-navbar > .navbar,
+body:not(.app-authed) .bslib-sidebar-layout,
+body:not(.app-authed) main,
+body:not(.app-authed) .tab-content{ visibility:hidden !important; }
+/* After login: hide the overlay entirely. */
+body.app-authed #login-overlay{ display:none !important; }
+
+.login-wrap{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;
+  justify-content:center;padding:24px;
+  background:linear-gradient(135deg,var(--navy-dark) 0%,var(--navy) 55%,#0a4aa0 100%);
+  font-family:Inter,'Segoe UI',Arial,sans-serif}
+.login-card{width:100%;max-width:540px;background:#fff;border-radius:18px;
+  box-shadow:0 22px 60px rgba(0,0,0,.40);overflow:hidden;border-top:7px solid var(--gold)}
+.login-logos{display:flex;align-items:center;justify-content:center;gap:34px;
+  padding:34px 30px 10px}
+.login-logo{height:54px;width:auto;max-width:46%;object-fit:contain}
+/* Logos pinned to the bottom of the sidebar */
+.sidebar-logos{margin-top:auto;padding-top:16px;border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
+.sidebar-logos img{height:30px;width:auto;max-width:46%;object-fit:contain;opacity:.9}
+.bslib-sidebar-layout>.sidebar>.sidebar-content{display:flex;flex-direction:column;height:100%}
+.login-title{text-align:center;font-size:2rem;font-weight:800;color:var(--navy-dark);
+  margin-top:10px;letter-spacing:-.2px}
+.login-sub{text-align:center;font-size:1.02rem;color:var(--navy);font-weight:600;
+  margin-top:4px}
+.login-body{padding:24px 40px 34px}
+.login-label{display:block;font-size:.95rem;font-weight:700;color:var(--navy-dark);
+  margin:16px 0 6px}
+.login-body .form-control{border-radius:11px;border:1.5px solid var(--border);
+  padding:13px 15px;font-size:1.08rem}
+.login-body .form-control:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(0,47,108,.14)}
+.login-btn{margin-top:24px;background:var(--navy);color:#fff;font-weight:700;border:none;
+  padding:14px;border-radius:12px;font-size:1.18rem;letter-spacing:.3px}
+.login-btn:hover{background:var(--navy-dark);color:#fff}
+.login-error{background:#fdecea;border:1px solid #f5c6cb;color:#a4262c;border-radius:9px;
+  padding:11px 14px;font-size:1rem;font-weight:600;margin-top:18px;text-align:center}
+.login-foot{text-align:center;font-size:.9rem;color:var(--muted);margin-top:22px;
+  letter-spacing:.3px}
+@media(max-width:560px){.login-card{max-width:100%}.login-logos{gap:20px}
+  .login-logo{height:66px}.login-title{font-size:1.6rem}}
+
+/* Logout button in the navbar (upper right) */
+.logout-btn{background:#fff;color:var(--gold)!important;border:none;font-weight:700;
+  margin:6px 10px 6px 0;border-radius:8px;padding:5px 14px}
+.logout-btn:hover{background:var(--navy);color:#fff!important}
+.navbar .nav-item:has(.logout-btn){display:flex;align-items:center}
+
+/* ---- Add Station form ---- */
+.req{color:#d32f2f;font-weight:700;margin-left:2px}
+.addform-intro{display:flex;gap:8px;align-items:flex-start;background:var(--bg);
+  border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:14px;
+  font-size:13px;color:var(--muted);line-height:1.45}
+.form-section-label{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--navy);margin:14px 0 6px}
+.addform-actions{display:flex;gap:10px;margin-top:16px}
+.ns-alert{border-radius:8px;padding:10px 12px;margin-top:8px;font-size:13px;line-height:1.4}
+.ns-err{background:#fdeaec;color:#9b1c2b;border:1px solid #f4c7cd}
+.ns-ok{background:#e7f6ec;color:#1b5e20;border:1px solid #b6e3c4}
+.addhelp p{font-size:13px;color:var(--muted);margin:0 0 10px;line-height:1.5}
+.addhelp b{color:var(--navy-dark)}
+.ns-recent-item{border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:8px}
+.ns-recent-item .ns-rec-name{font-weight:700;color:var(--navy);font-size:14px}
+.ns-recent-item .muted{font-size:12px;color:var(--muted)}
+
+/* Tighten + beautify the Add Station form */
+.addform{max-width:920px;padding-bottom:10px}
+.addform .row{--bs-gutter-y:.45rem;margin-bottom:.45rem}
+.addform .shiny-input-container{width:100%!important;margin-bottom:0}
+.addform .form-section-label{font-size:12.5px;margin:18px 0 8px;padding-bottom:5px;
+  border-bottom:2px solid var(--gold)}
+.addform .form-section-label:first-of-type{margin-top:8px}
+.addform label.control-label,.addform .shiny-input-container>label{
+  font-size:13.5px;font-weight:600;color:var(--navy-dark);margin-bottom:4px}
+.addform .form-control,.addform select.form-select,.addform .selectize-input{
+  border-radius:8px;border:1px solid var(--border);font-size:14px;padding:9px 12px;
+  transition:border-color .12s ease, box-shadow .12s ease}
+.addform-intro{font-size:13.5px}
+.addform .form-control:focus,.addform select.form-select:focus,.addform .selectize-input.focus{
+  border-color:var(--navy);box-shadow:0 0 0 .18rem rgba(0,47,108,.12)}
+.addform .form-control::placeholder{color:#aab2bf}
+.addform textarea.form-control{min-height:62px;resize:vertical}
+.addhelp-body{padding-bottom:12px}
+
+/* Recently-added table (Indiana navy/gold) */
+.ns-empty{color:var(--muted);font-size:13px;padding:6px 2px}
+.ns-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;
+  border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.ns-table thead th{background:var(--navy);color:#fff;text-align:left;font-weight:700;
+  font-size:11px;letter-spacing:.04em;text-transform:uppercase;padding:8px 10px;
+  border-bottom:2px solid var(--gold)}
+.ns-table tbody td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.ns-table tbody tr:last-child td{border-bottom:none}
+.ns-table tbody tr:nth-child(even){background:#f8fafc}
+.ns-table tbody tr:hover{background:#eef3f9}
+.ns-tname{font-weight:700;color:var(--navy);line-height:1.2}
+.ns-taddr{font-size:12px;color:var(--muted);margin-top:1px}
+.ns-tc{white-space:nowrap;color:var(--navy-dark)}
+.ns-tactions{text-align:right;white-space:nowrap}
+.btn-xs{padding:3px 7px;font-size:12px;border-radius:6px;line-height:1;margin-left:5px}
+.btn-edit{background:#fff;border:1px solid var(--navy);color:var(--navy)}
+.btn-edit:hover{background:var(--navy);color:#fff}
+.btn-del{background:#fff;border:1px solid #d32f2f;color:#d32f2f}
+.btn-del:hover{background:#d32f2f;color:#fff}
+/* Stack the Status + confidence legends at top-right with equal width so both edges
+   line up (right edges are already pinned to the corner by leaflet's "topright"). */
+.info.legend.status-legend,
+.info.legend.conf-legend{min-width:212px;box-sizing:border-box;white-space:nowrap}
+
+/* ---- Confidence info icon ---- */
+.conf-info{color:var(--navy);cursor:help;vertical-align:-2px;margin-left:1px}
+
+/* ---- About page (enterprise) ---- */
+.about-card{border:1px solid var(--border);overflow:hidden}
+.about-body{padding:0!important}
+.about-hero{background:linear-gradient(135deg,var(--navy),var(--navy-dark));color:#fff;padding:26px 30px}
+.about-hero-eyebrow{font-size:11px;font-weight:800;letter-spacing:.15em;color:var(--gold);margin-bottom:7px}
+.about-hero-title{font-size:26px;font-weight:800;line-height:1.1;margin-bottom:9px;letter-spacing:-.01em}
+.about-hero-sub{font-size:14px;line-height:1.6;color:#dbe4f2;max-width:780px}
+.about-sec{padding:20px 30px;border-bottom:1px solid var(--border)}
+.about-h{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:800;color:var(--navy);margin-bottom:14px}
+.about-h svg{color:var(--gold-d);width:19px;height:19px;flex:none}
+.about-lead{font-size:14px;color:#3a4658;line-height:1.6;margin:0}
+.about-lead b{color:var(--navy-dark)}
+.about-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.about-card2{display:flex;gap:11px;align-items:flex-start;background:var(--bg);
+  border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.about-card2 svg{color:var(--navy);width:19px;height:19px;flex:none;margin-top:2px}
+.about-card2 b{color:var(--navy-dark);font-size:14px}
+.about-card2 p{margin:2px 0 0;font-size:12.5px;color:var(--muted);line-height:1.4}
+.about-tier{display:flex;gap:14px;align-items:stretch;border:1px solid var(--border);
+  border-left-width:5px;border-radius:10px;padding:14px 16px;margin-bottom:12px;background:#fff}
+.about-tier:last-child{margin-bottom:0}
+.about-tier.tier-a{border-left-color:var(--teal)}
+.about-tier.tier-b{border-left-color:var(--navy)}
+.about-tier-tag{flex:none;width:150px;display:flex;align-items:center;justify-content:center;text-align:center;
+  font-size:11.5px;font-weight:800;color:#fff;border-radius:9px;padding:8px 10px;line-height:1.25}
+.tier-a .about-tier-tag{background:var(--teal)}
+.tier-b .about-tier-tag{background:var(--navy)}
+.about-tier-body{font-size:13.5px;color:#33415c;line-height:1.55}
+.about-tier-body b{color:var(--navy-dark)}
+.about-steps{margin:0;padding-left:20px;font-size:13.5px;color:#33415c;line-height:1.7}
+.about-steps li{margin-bottom:6px}
+.about-steps b{color:var(--navy-dark)}
+.about-conf{display:flex;flex-direction:column;gap:11px}
+.about-conf-row{display:flex;align-items:center;gap:11px;font-size:14px;color:#33415c}
+.about-conf-row b{color:var(--navy-dark);min-width:62px}
+.about-conf .conf-dot{width:16px;height:16px;border-radius:50%;flex:none;border:2px solid #fff;box-shadow:0 0 0 1px var(--border)}
+.about-list{margin:0;padding-left:18px;font-size:13.5px;color:#33415c;line-height:1.65}
+.about-list li{margin-bottom:7px}
+.about-list b{color:var(--navy-dark)}
+.about-note{display:flex;gap:10px;align-items:flex-start;margin:18px 30px 24px;
+  background:#fff8e6;border:1px solid #f0dfa8;border-radius:10px;padding:12px 14px;font-size:12.5px;color:#6b5900}
+.about-note svg{color:var(--gold-d);flex:none;margin-top:1px;width:17px;height:17px}
+.ns-tmeta{margin-top:4px;display:flex;gap:5px;flex-wrap:wrap}
+.ns-typechip{font-size:10.5px;font-weight:700;color:var(--navy);background:#eef2f8;
+  border:1px solid var(--border);border-radius:999px;padding:1px 8px}
+.ns-confchip{font-size:10.5px;font-weight:800;border-radius:999px;padding:1px 8px}
