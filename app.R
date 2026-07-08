@@ -486,6 +486,22 @@ add_indiana <- function(lf, fill = TRUE) {
   }
 }
 
+# ---- Alternative Fuel Corridors (FHWA) — TN context layer -------------------
+# Pulled live from the federal FHWA ArcGIS service, filtered to STATE = 'TN'.
+# Fetched once at startup; a network hiccup just means no AFC layer (app still works).
+AFC_URL <- paste0("https://services.arcgis.com/rD2ylXRs80UroD90/arcgis/rest/services/",
+                  "AltFuelCorridors_R1to7_WGS84_Public_View/FeatureServer/0/query")
+AFC_TN <- tryCatch({
+  if (!requireNamespace("sf", quietly = TRUE)) NULL else {
+    resp <- request(AFC_URL) |>
+      req_url_query(where = "STATE='TN'", outFields = "PRIMARY_NA,ROADTYPE",
+                    returnGeometry = "true", f = "geojson", outSR = "4326") |>
+      req_timeout(25) |> req_perform()
+    g <- sf::st_read(resp_body_string(resp), quiet = TRUE)
+    if (nrow(g) == 0) NULL else sf::st_zm(g)
+  }
+}, error = function(e) { message("AFC fetch failed: ", conditionMessage(e)); NULL })
+
 # ---- Inline SVG icon set (enterprise popup cards) ---------------------------
 # 16px line icons, currentColor-driven so we can tint per row.
 svg_icon <- function(name, col = "#5b6472", sz = 15) {
@@ -685,7 +701,7 @@ main_ui <- page_navbar(
             textInput("ns_name", HTML('Station name <span class="req">*</span>'),
                       placeholder = "e.g. Pilot Travel Center"),
             textInput("ns_address", HTML('Street address <span class="req">*</span>'),
-                      placeholder = "e.g. 123 Main St, Kokomo, IN 46901")),
+                      placeholder = "e.g. 123 Main St, Nashville, TN 37203")),
           layout_columns(col_widths = c(4, 4, 4),
             selectInput("ns_state", HTML('State <span class="req">*</span>'),
                         choices = c("TN","KY","VA","NC","GA","AL","MS","AR","MO")),
@@ -727,7 +743,7 @@ main_ui <- page_navbar(
               tags$code(".../location/1090403"), " is the ID. Adding it lets the live check ",
               "watch the station automatically."),
             tags$p(tags$b("Latitude / longitude"), " — right-click the spot in Google Maps and ",
-              "click the coordinates to copy them (e.g. ", tags$code("41.343, -86.310"), ")."),
+              "click the coordinates to copy them (e.g. ", tags$code("36.163, -86.781"), ")."),
             tags$p(tags$b("Network · connectors · ports"), " — read these off the PlugShare ",
               "listing (the network badge, the plug types, and the number of stalls).")),
           tags$hr(),
@@ -815,7 +831,7 @@ main_ui <- page_navbar(
                   " re-reads each Coming Soon station's PlugShare page and flags any that stop ",
                   "saying \"Coming Soon\"."),
           tags$li(tags$b("Permanent record:"), " confirmed operational stations should be promoted to ",
-                  tags$code("master_Data.csv"), "."))),
+                  tags$code("master_Data_TN.csv"), "."))),
       div(class = "about-note", bs_icon("info-circle-fill"),
         tags$span("PlugShare blocks iframe embedding, so the PlugShare tab recreates the listing with ",
                   "an ESRI map plus the data we hold, and deep-links to the live page.")))))
@@ -974,7 +990,8 @@ server <- function(input, output, session) {
   # KPIs (over all tracked, not filtered). cls is authoritative: master_operational stations
   # (Schmidt, Pilot Greenfield, BIC) are already forced to "op" in merged(), so counts, map
   # color, and Tracker rows all agree.
-  output$kpi_total <- renderText(nrow(merged()))
+  # "Tracked" counts only the tracked layers (Coming Soon, Awarded, Open) - NOT DCFC context.
+  output$kpi_total <- renderText({ m <- merged(); sum(m$cls != "dcfc", na.rm = TRUE) })
   output$kpi_op <- renderText({ m <- merged(); sum(m$cls == "op", na.rm = TRUE) })
   output$kpi_cs <- renderText({ m <- merged(); sum(m$cls == "cs", na.rm = TRUE) })
   output$kpi_nc <- renderText({ m <- merged(); sum(m$cls == "nc", na.rm = TRUE) })
@@ -996,7 +1013,11 @@ server <- function(input, output, session) {
       addPolylines(lng = BS_BORDER$x, lat = BS_BORDER$y, color = "#9aa5b5", weight = 1,
                    opacity = .6, group = "State borders") %>%
       add_indiana(fill = TRUE) %>%
+      {if (!is.null(AFC_TN)) addPolylines(., data = AFC_TN, color = "#E87722",
+        weight = 3.5, opacity = .55, group = "AFC Corridors",
+        label = ~PRIMARY_NA) else .} %>%
       addLayersControl(baseGroups = c("ESRI Streets","ESRI Topo","ESRI Imagery"),
+                       overlayGroups = if (!is.null(AFC_TN)) "AFC Corridors" else NULL,
                        options = layersControlOptions(collapsed = FALSE)) %>%
       fitBounds(IN_BBOX$xmin, IN_BBOX$ymin, IN_BBOX$xmax, IN_BBOX$ymax)
   })
@@ -1520,16 +1541,20 @@ server <- function(input, output, session) {
   # The map is drawn ONCE: all stations + the Indiana boundary, fit to the whole state.
   # Markers carry layerId = station_id so a click tells us which station was tapped.
   output$ps_map <- renderLeaflet({
-    all <- isolate(merged()); all <- all[!is.na(all$lat) & !is.na(all$lon), ]
+    all <- isolate(filtered()); all <- all[!is.na(all$lat) & !is.na(all$lon), ]
     leaflet(options = leafletOptions(zoomControl = TRUE)) %>%
       addProviderTiles(providers$Esri.WorldStreetMap, group = "ESRI Streets") %>%
       addProviderTiles(providers$Esri.WorldTopoMap,   group = "ESRI Topo") %>%
       addProviderTiles(providers$Esri.WorldImagery,   group = "ESRI Imagery") %>%
       addLayersControl(baseGroups = c("ESRI Streets","ESRI Topo","ESRI Imagery"),
+                       overlayGroups = if (!is.null(AFC_TN)) "AFC Corridors" else NULL,
                        options = layersControlOptions(collapsed = TRUE)) %>%
       addPolylines(lng = BS_BORDER$x, lat = BS_BORDER$y, color = "#9aa5b5",
                    weight = 1, opacity = .7) %>%
       add_indiana(fill = TRUE) %>%
+      {if (!is.null(AFC_TN)) addPolylines(., data = AFC_TN, color = "#E87722",
+        weight = 3.5, opacity = .55, group = "AFC Corridors",
+        label = ~PRIMARY_NA) else .} %>%
       # No click popup here — clicking a marker fills the sidebar detail panel instead
       # (avoids duplicating the same info on the map and in the sidebar). Hover shows the name.
       addCircleMarkers(data = all, lng = ~lon, lat = ~lat, layerId = ~station_id,
@@ -1552,7 +1577,7 @@ server <- function(input, output, session) {
 
   # Keep marker colours in sync with status changes (flag/confirm) without redrawing the map.
   observe({
-    all <- merged(); all <- all[!is.na(all$lat) & !is.na(all$lon), ]
+    all <- filtered(); all <- all[!is.na(all$lat) & !is.na(all$lon), ]
     leafletProxy("ps_map") %>% clearMarkers() %>%
       addCircleMarkers(data = all, lng = ~lon, lat = ~lat, layerId = ~station_id,
         radius = 9, color = "#fff", weight = 2, fillColor = ~color, fillOpacity = .95,
