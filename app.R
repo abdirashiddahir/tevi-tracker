@@ -1,8 +1,10 @@
 # =============================================================================
-# Coming Soon Tracker — Shiny (bslib) app
-# INDOT-themed companion to the Indiana NEVI Dashboard. Design language adopted
-# from NEVI_National_Dashboard. SQLite-backed shared tracking + live PlugShare
-# auto-update (scrapes each location ID's og:title to detect status changes).
+# TEVI Tracker — Tennessee NEVI — Shiny (bslib) app
+# TDOT/EPIC-branded (navy + red) tracker for ALL Tennessee station types:
+# Coming Soon, NEVI Awarded, and Open (Creditable); existing DCFCs shown as
+# context only. Includes an FHWA Alternative Fuel Corridor overlay. SQLite-backed
+# tracking + live PlugShare auto-update (scrapes each location ID's og:title to
+# detect status changes). Templated from the Indiana Coming Soon Tracker.
 # =============================================================================
 library(shiny)
 library(bslib)
@@ -791,8 +793,8 @@ main_ui <- page_navbar(
           div(class = "about-tier-body",
             tags$b("Live."),
             " Once verified on PlugShare, click ", tags$b("Confirm operational"),
-            " and the station is marked open. Awarded sites (no PlugShare link yet) are confirmed ",
-            "manually once they are built - add the link via ", tags$b("Edit"), "."))),
+            " and the station is marked open. Coming Soon, Awarded, and Open sites all now carry a ",
+            "PlugShare link, so any of them can be checked against its live listing."))),
       div(class = "about-sec",
         div(class = "about-h", bs_icon("pencil-square"), tags$span("Adding a station")),
         tags$ol(class = "about-steps",
@@ -801,8 +803,8 @@ main_ui <- page_navbar(
           tags$li("Choose a ", tags$b("Station type"), ". For Coming Soon, also set a ",
                   tags$b("Confidence level"), " - hover the info icon for what each level means."),
           tags$li("Optionally add the ", tags$b("PlugShare location ID"), " so the live check can watch it."),
-          tags$li("Click ", tags$b("Save"), ". It is stored durably and shared with everyone; ",
-                  "non-Coming-Soon types go straight to the Scenario tool."))),
+          tags$li("Click ", tags$b("Save"), ". It is stored durably and appears immediately on the ",
+                  "map and in the tracker."))),
       div(class = "about-sec",
         div(class = "about-h", bs_icon("bar-chart-steps"), tags$span("Confidence levels (Coming Soon)")),
         div(class = "about-conf",
@@ -819,14 +821,17 @@ main_ui <- page_navbar(
         div(class = "about-h", bs_icon("palette-fill"), tags$span("Map colors")),
         tags$p(class = "about-lead",
           tags$b("Status:"), " Operational (green), Coming Soon (teal), Awarded (navy), ",
-          "Needs Review (amber), Existing DCFC (gray, off by default). ", tags$b("Coming-Soon stations"),
-          " are colored by confidence - High (crimson), Medium (yellow), Low (gray).")),
+          "Needs Review (amber), Existing DCFC (charcoal, off by default). ", tags$b("Coming-Soon stations"),
+          " are colored by confidence - High (crimson), Medium (yellow), Low (gray)."),
+        tags$p(class = "about-lead",
+          tags$b("Alternative Fuel Corridors:"), " the FHWA-designated NEVI corridors for Tennessee ",
+          "(I-24, I-26, I-40, I-65, I-75, I-81, US-64) draw as an orange overlay you can toggle in the ",
+          "map's layers control.")),
       div(class = "about-sec",
-        div(class = "about-h", bs_icon("hdd-network-fill"), tags$span("Shared, durable & live")),
+        div(class = "about-h", bs_icon("hdd-network-fill"), tags$span("Durable & live")),
         tags$ul(class = "about-list",
-          tags$li(tags$b("Shared & durable:"), " edits and added stations live in SQLite and are ",
-                  "mirrored to a shared API on a persistent disk - they survive restarts and are ",
-                  "shared across everyone using the tool."),
+          tags$li(tags$b("Durable edits:"), " edits and added stations are saved to a SQLite store ",
+                  "so they persist between visits. (A shared ArcGIS Online sync is a planned later phase.)"),
           tags$li(tags$b("Live auto-update:"), " ", tags$b("Check all stations now"),
                   " re-reads each Coming Soon station's PlugShare page and flags any that stop ",
                   "saying \"Coming Soon\"."),
@@ -1272,9 +1277,8 @@ server <- function(input, output, session) {
         tags$div(class = "rc-headtext", style = "margin-bottom:10px",
           tags$div(class = "rc-name", "Confirmed operational"),
           tags$div(class = "muted",
-            "Reset a station to send it back to “needs review” and remove it from the ",
-            "Scenario tool (it also clears the station from the status API). ",
-            "Use this to undo a test confirmation before a demo.")),
+            "Reset a station to send it back to “needs review” and mark it Coming Soon again ",
+            "in the tracker. Use this to undo a test confirmation before a demo.")),
         lapply(seq_len(nrow(cdf)), function(i) {
           r <- cdf[i, ]
           div(class = "review-card",
