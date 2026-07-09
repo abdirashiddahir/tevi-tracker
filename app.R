@@ -1073,10 +1073,10 @@ server <- function(input, output, session) {
                    opacity = .6, group = "State borders") %>%
       add_indiana(fill = TRUE) %>%
       {if (!is.null(AFC_TN)) addPolylines(., data = AFC_TN, color = "#12408A",
-        weight = 3.5, opacity = .75, group = "AFC Corridors",
+        weight = 3.5, opacity = .75, group = "EV AFCs",
         label = ~PRIMARY_NA) else .} %>%
       addLayersControl(baseGroups = c("ESRI Streets","ESRI Topo","ESRI Imagery"),
-                       overlayGroups = if (!is.null(AFC_TN)) "AFC Corridors" else NULL,
+                       overlayGroups = if (!is.null(AFC_TN)) "EV AFCs" else NULL,
                        options = layersControlOptions(collapsed = FALSE)) %>%
       fitBounds(IN_BBOX$xmin, IN_BBOX$ymin, IN_BBOX$xmax, IN_BBOX$ymax)
   })
@@ -1594,13 +1594,13 @@ server <- function(input, output, session) {
       addProviderTiles(providers$Esri.WorldTopoMap,   group = "ESRI Topo") %>%
       addProviderTiles(providers$Esri.WorldImagery,   group = "ESRI Imagery") %>%
       addLayersControl(baseGroups = c("ESRI Streets","ESRI Topo","ESRI Imagery"),
-                       overlayGroups = if (!is.null(AFC_TN)) "AFC Corridors" else NULL,
+                       overlayGroups = if (!is.null(AFC_TN)) "EV AFCs" else NULL,
                        options = layersControlOptions(collapsed = TRUE)) %>%
       addPolylines(lng = BS_BORDER$x, lat = BS_BORDER$y, color = "#9aa5b5",
                    weight = 1, opacity = .7) %>%
       add_indiana(fill = TRUE) %>%
       {if (!is.null(AFC_TN)) addPolylines(., data = AFC_TN, color = "#12408A",
-        weight = 3.5, opacity = .75, group = "AFC Corridors",
+        weight = 3.5, opacity = .75, group = "EV AFCs",
         label = ~PRIMARY_NA) else .} %>%
       # No click popup here — clicking a marker fills the sidebar detail panel instead
       # (avoids duplicating the same info on the map and in the sidebar). Hover shows the name.
