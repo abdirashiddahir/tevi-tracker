@@ -1,100 +1,120 @@
-# Coming Soon Tracker — Shiny app (bslib)
+# TEVI Tracker — Tennessee NEVI (Shiny / bslib)
 
-INDOT-themed companion to the Indiana NEVI Dashboard for verifying and tracking the
-**Coming Soon** charging stations against PlugShare. Design language adopted from
-`NEVI_National_Dashboard` (bslib / Bootstrap 5, navy + gold, Inter, value boxes, gold-accented
-cards). Shared, persistent (SQLite-backed) edits **plus a live PlugShare auto-updater**.
+A self-service tracker for Tennessee's NEVI‑funded and other DC fast‑charging stations. Unlike the
+Indiana "Coming Soon" tool it was templated from, this tracks **all station types** — Coming Soon,
+NEVI Awarded, and Open (Creditable) — so staff can see *when each site opens*. Existing (non‑NEVI)
+DCFCs are shown as **context only** (toggle, off by default) and are **not tracked**. TDOT / EPIC
+branding (navy + red), Alternative Fuel Corridor overlay, and durable SQLite‑backed edits.
 
 ## Run locally
 ```r
-shiny::runApp("Coming Soon Tracker App")
+shiny::runApp(".", port = 7788)   # from inside "Coming Soon Tracker App - TN"
 ```
-Packages: `shiny, bslib, bsicons, leaflet, DT, dplyr, DBI, RSQLite, maps, sf, httr2, shinycssloaders`
-(`sf` reads the official Indiana boundary shapefile; if `sf` or the shapefile is missing the app
-falls back to the `maps` outline.)
-(all already installed for this project).
+Login (defaults, overridable via env vars): user `TEVItracker`, password `TEVI_HNTB2026?!_94`.
+
+Packages: `shiny, bslib, bsicons, leaflet, DT, dplyr, DBI, RSQLite, maps, sf, httr2`
+(all already installed for this project). The Tennessee outline uses the `maps` package; drop a
+`Tennessee_State_Boundary/` shapefile in the app folder to use an official boundary instead.
+
+## Data
+`data/master_Data_TN.csv` — 182 rows, one unified schema. Stations are classified by the
+`data_source` column:
+
+| `data_source`        | Shown as        | Tracked? | PlugShare link |
+|----------------------|-----------------|----------|----------------|
+| `Coming_Soon`        | Coming Soon      | yes      | yes            |
+| `NEVI Awarded Sites` | NEVI Awarded     | yes      | yes (RA‑added) |
+| `Open_Creditable`    | Open (Creditable)| yes      | yes            |
+| `Other_DCFC`         | Existing DCFC    | **no** (context) | mixed  |
+
+The **Tracked** KPI and the PlugShare tab exclude `Other_DCFC` by default. All 28 NEVI Awarded sites
+now carry a PlugShare `location/<id>` link (added by a research assistant via
+`TEVI_Awarded_Missing_PlugShare.xlsx`, then merged into the CSV by coordinate match).
 
 ## Tabs
-- **Map** — value-box KPIs (Tracked / Operational / Coming Soon / Under Repair / Not on PS) over an
-  ESRI basemap (Streets / Topo / Imagery) with **Indiana (navy) + border-state (gray) outlines via
-  the `maps` package**. Markers colored by status; **each popup shows the full PlugShare detail**
-  (status, network, plugs, chargers, location ID, verified date, notes) + an
-  **"Open full PlugShare listing ↗"** deep link.
-- **Tracker** — editable table (PlugShare status, Operational, Network, Chargers, Notes).
-  **Every edit saves to SQLite and is shared across users.** Export CSV.
-- **Review** — the queue of stations the live check flagged as *possibly* operational. Each card has
-  an *Investigate on PlugShare ↗* link plus **Confirm operational** / **Still coming soon** buttons.
-  This is the only place a station becomes Operational. Map popups are enterprise SVG cards.
-- **PlugShare** — opens zoomed to **all stations + the Indiana boundary**. **Click a station on the
-  map** → an on-map PlugShare-style popup opens (PlugShare blocks iframes, so it's recreated) and the
-  full detail + live link appears in the left panel, with a per-station **"Check live status"**. No
-  dropdown — it's click-driven like the PlugShare website. The Indiana boundary is drawn from the
-  official **`Indiana_State_Boundary_2020`** shapefile (via `sf`), not the `maps` package.
-- **About** — data sources + how the live auto-update works.
+- **Map** — KPI value boxes (Tracked / Operational / Coming Soon / New CS / Needs Review / Awarded /
+  Existing DCFC) over an ESRI basemap, with the TN outline + border‑state lines. Markers colored by
+  status; **Alternative Fuel Corridors** (FHWA, live‑fetched, `STATE='TN'`) draw as a toggleable
+  orange overlay.
+- **Tracker** — editable table with a **layer dropdown** (All / Coming Soon / Awarded / Open /
+  Existing DCFC). Every edit saves to SQLite. Export CSV.
+- **Review** — the queue of stations the live check flagged as *possibly* operational; each card
+  shows **which layer** it belongs to and has **Confirm operational** / **Still coming soon** buttons.
+  This is the only place a station becomes Operational.
+- **Add station** — add a station of any type with a confidence level; edits/deletes persist.
+- **PlugShare** — click a station → an on‑map PlugShare‑style popup + full detail in the side panel.
+- **About** — data sources, the lifecycle model, and map‑color legend.
 
-## Live PlugShare check → human review (no silent auto-flips)
-The sidebar **"Check all stations now"** (and the per-station / Review-tab buttons) fetches each
-station's PlugShare page and reads its `og:title`. The reader is **conservative**: it returns
-`coming_soon`, `candidate`, or `inconclusive`. A *specific* listing title with no "(Coming Soon)"
-is a **candidate** → the station is **flagged for review (amber)**; a generic/blank PlugShare
-homepage title is **inconclusive** and ignored (this prevents the earlier Wawa-type false positive).
+## Alternative Fuel Corridors
+Fetched at startup from the FHWA ArcGIS FeatureServer
+(`AltFuelCorridors_R1to7_WGS84_Public_View`) filtered to `STATE='TN'` → I‑24, I‑26, I‑40, I‑65,
+I‑75, I‑81, US‑64. Wrapped in `tryCatch`: if the service is unreachable the app still starts, just
+without the corridor overlay. (ArcGIS **web‑map write** integration is a planned later phase.)
 
-**Nothing is promoted automatically.** Flagged stations appear on the **Review** tab with an
-*Investigate on PlugShare ↗* link and **Confirm operational** / **Still coming soon** buttons. Only
-**Confirm** sets a station Operational (via `confirm_operational()`); **Dismiss** clears the flag.
-Promote confirmed flips to `master_Data.csv` afterwards. No PlugShare API key required.
+## Deployment — private GitHub repo → Posit Connect Cloud
 
-> The authoritative status fields (`coming_soon`, `status:"OPERATIONAL"`, live charger power) live
-> behind PlugShare's **authenticated** JSON API (401 without a paid key) — see the captured
-> `plugshare_raw_*.json` and `HOW_IT_WORKS.html` §7. If a key is obtained later, the title scrape can
-> be swapped for those exact fields and confirmation could be automated with high confidence.
+A Shiny app needs a real R server (it can't run on Vercel/GitHub Pages). We deploy to **Posit
+Connect Cloud** (org **HNTB Tech**, `connect.posit.cloud/hntboh`), which builds directly from a
+GitHub repository using the committed `manifest.json`.
 
-A full, plain-language explainer (**`HOW_IT_WORKS.html`** — how it's built, how to use it, the
-database for newcomers, the PlugShare JSON schema, a line-by-line code walkthrough, and Posit Connect
-+ private-repo deployment) is kept in the **parent folder** as an internal reference; it is not part of
-the deployed app.
+**Secrets:** keep the repo **private** — `app.R` contains the login defaults. `.gitignore` already
+excludes `credentials.R`, `*.xlsx`, the `TEVI reference materials/` folder, the runtime
+`*.sqlite`, and dev scratch files. Never commit an API token; set secrets as Connect env vars.
 
-## Deploy free to shinyapps.io
-A Shiny app needs a real R server — it **cannot** run on Vercel/GitHub Pages (static only).
-shinyapps.io is Posit's free tier and keeps the shared edits + live auto-updater.
-
-1. Get a free account at https://www.shinyapps.io → **Account → Tokens → Show** (copies your
-   `setAccountInfo(...)` line).
-2. In R:
-   ```r
-   install.packages("rsconnect")
-   rsconnect::setAccountInfo(name = "<acct>", token = "<token>", secret = "<secret>")
-   rsconnect::deployApp(
-     appDir   = "Coming Soon Tracker App",
-     appName  = "coming-soon-tracker")
+### A. Create the private repo & push
+1. On GitHub → **New repository**, e.g. `tevi-tracker`, **Visibility: Private**. Do **not** add a
+   README / .gitignore / license (this repo already has them).
+2. Push:
+   ```bash
+   git remote add origin https://github.com/<ACCOUNT>/<REPO>.git
+   git push -u origin master        # or: git branch -M main && git push -u origin main
    ```
-   (Or open `app.R` in RStudio → blue **Publish** button → choose shinyapps.io.)
-3. **Persistence note:** on the shinyapps.io free tier the container's disk resets when the app goes
-   to sleep, so SQLite edits are not guaranteed to persist long-term. For durable shared edits,
-   either upgrade the plan, set env var `TRACKER_DB` to a mounted volume (Connect/HF Spaces), or
-   point it at an external database. For a daily unattended auto-check, schedule a separate job
-   (the app's "Check now" button covers on-demand checks).
 
-Alternative free hosts that keep all features: **Hugging Face Spaces** (Docker) or
-**Posit Connect Cloud**.
+### B. Publish on Posit Connect Cloud
+1. At `connect.posit.cloud/hntboh` → **Publish** → **Shiny**.
+2. Authorize the **Posit Connect Cloud GitHub App** for the new private repo (Configure → grant
+   access to just that repo).
+3. Select **Repository** = the new repo, **Branch** = `master` (or `main`), **Primary file** =
+   `app.R`, then **Publish**. First build takes a few minutes (`sf` / `leaflet` compile).
+
+### C. Set credentials as environment variables (recommended)
+In the deployed content → **⋮ → Settings → Variables**:
+
+| Variable          | Value                                            |
+|-------------------|--------------------------------------------------|
+| `TRACKER_USER`    | `TEVItracker`                                     |
+| `TRACKER_PASS`    | `TEVI_HNTB2026?!_94`                               |
+| `STATUS_API_URL`  | *(leave empty — API writes stay no‑ops until the ArcGIS phase)* |
+
+Then **Redeploy** so the variables take effect.
+
+### Regenerating the manifest
+If dependencies change, rebuild `manifest.json` before pushing:
+```r
+rsconnect::writeManifest(appDir = ".", appPrimaryDoc = "app.R")
+```
+
+## Updating PlugShare links (research‑assistant workflow)
+1. Send `TEVI_Awarded_Missing_PlugShare.xlsx` (gitignored) to the RA to fill the `PlugShare_link`
+   column.
+2. Merge the completed workbook into `data/master_Data_TN.csv` **by coordinate** (station names
+   repeat across chains, so lat/lon is the safe key). Change only `PlugShare_link`; preserve every
+   other cell (including literal `NA` tokens) verbatim.
+3. Relaunch and confirm each updated row yields a numeric `location/<id>`.
 
 ## Folder layout
 ```
-Coming Soon Tracker App/
-├── app.R                 # bslib UI + server + PlugShare reader + review queue
-├── .gitignore            # excludes secrets + the runtime SQLite
-├── Indiana_State_Boundary_2020/   # official INDOT boundary shapefile (.shp/.shx/.dbf/.prj) — committed
+Coming Soon Tracker App - TN/
+├── app.R                     # bslib UI + server + PlugShare reader + AFC overlay + review queue
+├── manifest.json             # Posit Connect Cloud dependency lockfile (app.R entrypoint)
+├── .gitignore                # excludes secrets, xlsx, reference materials, runtime SQLite
 ├── www/
-│   ├── styles.css        # INDOT theme on bslib + PlugShare panel + Review cards
-│   └── scripts.js
+│   ├── styles.css            # TDOT/EPIC theme (navy + red)
+│   ├── scripts.js
+│   ├── TDOT_logo.png
+│   └── hntb_logo.png
 ├── data/
-│   ├── master_Data.csv                 # bundled copy (deploy fallback)
-│   ├── verifications.R                 # bundled copy (deploy fallback)
-│   └── tracker_store.sqlite            # created at runtime (shared edits) — gitignored
+│   └── master_Data_TN.csv    # unified station dataset (182 rows)
+├── TN_City_Boundaries/       # optional city shapefile (state outline falls back to {maps})
 └── README.md
 ```
-
-**Committing to GitHub:** the `.gitignore` already excludes `*.sqlite`, `credentials.R`, and dev
-scratch files. `credentials.R` lives in the **project root** (one level up), so committing only this
-app folder won't include it — but never commit it. The runtime `tracker_store.sqlite` is recreated on
-first launch (it seeds from `master_Data.csv` + `verifications.R`), so it should not be committed.
