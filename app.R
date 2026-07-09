@@ -514,7 +514,9 @@ svg_icon <- function(name, col = "#5b6472", sz = 15) {
     id    = '<rect x="2" y="3.5" width="12" height="9" rx="1.5"/><path d="M4.5 6.5h3M4.5 9h5"/>',
     check = '<circle cx="8" cy="8" r="6.3"/><path d="M5.3 8.2l1.9 1.9 3.5-3.8" stroke="#fff"/>',
     note  = '<path d="M3.5 2.5h9v11l-2-1.4-2 1.4-2-1.4-2 1.4v-11z"/><path d="M5.5 5.5h5M5.5 8h5"/>',
-    ext   = '<path d="M6 3.5H3.5v9h9V10M9.5 3.5H13v3.5M13 3.5 7.5 9"/>'
+    ext   = '<path d="M6 3.5H3.5v9h9V10M9.5 3.5H13v3.5M13 3.5 7.5 9"/>',
+    clock = '<circle cx="8" cy="8" r="6.3"/><path d="M8 4.6V8l2.4 1.4"/>',
+    warn  = '<path d="M8 2.3 1.9 12.8h12.2L8 2.3z"/><path d="M8 6.4v3M8 11.1v.05"/>'
   )
   sprintf('<svg viewBox="0 0 16 16" width="%d" height="%d" fill="none" stroke="%s" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;flex:none">%s</svg>',
           sz, sz, col, paths[[name]])
@@ -573,6 +575,45 @@ make_popup <- function(r) {
     row("check", "Open date", if (!is.null(r$open_date)) r$open_date else ""),
     row("check", "Verified", r$verified_date),
     notes, cta)
+}
+
+# Enterprise popup for the Review-tab map (flagged "needs review" stations).
+# Same design language as make_popup, tuned for the review context (amber pin,
+# a "NEEDS REVIEW" status pill, and a Verify-on-PlugShare call to action).
+make_review_popup <- function(r) {
+  esc  <- function(v) htmlEscape(ifelse(is.na(v), "", as.character(v)))
+  has  <- function(v) !is.na(v) && nzchar(as.character(v))
+  navy <- INDOT$navy; amber <- INDOT$amber
+  row  <- function(icon, k, v) if (has(v)) sprintf(
+    "<div style='display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-top:1px solid #eef1f6'>
+       %s<div style='flex:1'><div style='font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:#9aa3b2;font-weight:700'>%s</div>
+       <div style='font-size:12.5px;color:#1d2633;font-weight:600'>%s</div></div></div>",
+    svg_icon(icon, navy), k, esc(v)) else ""
+  cta <- if (has(r$plugshare_url))
+    sprintf("<a href='%s' target='_blank' rel='noopener' style='display:flex;align-items:center;justify-content:center;gap:7px;margin-top:11px;background:%s;color:#fff;text-decoration:none;font-weight:700;padding:9px 12px;border-radius:9px;font-size:12.5px'>%s Verify on PlugShare</a>",
+            r$plugshare_url, navy, svg_icon("ext", "#ffffff"))
+    else "<div style='margin-top:9px;color:#9aa3b2;font-size:11.5px;font-style:italic'>Not listed on PlugShare</div>"
+  flagged <- if (has(r$review_at)) substr(as.character(r$review_at), 1, 16) else ""
+  sprintf("<div style='font-family:Inter,Segoe UI,Arial;min-width:248px;max-width:302px'>
+      <div style='display:flex;align-items:flex-start;gap:9px'>
+        %s
+        <div style='flex:1'>
+          <div style='font-weight:800;color:%s;font-size:14.5px;line-height:1.2'>%s</div>
+          <div style='color:#6b7280;font-size:11.5px;margin-top:2px'>%s</div>
+        </div>
+      </div>
+      <div style='margin-top:9px'>
+        <span style='display:inline-flex;align-items:center;gap:5px;background:#fff6e5;color:#8a5d00;border:1px solid #f0d9a8;padding:3px 11px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.3px'>%s NEEDS REVIEW</span>
+      </div>
+      <div style='margin-top:6px'>%s%s%s</div>
+      %s
+    </div>",
+    svg_icon("pin", amber, 22), navy, esc(r$station_name), esc(r$address),
+    svg_icon("warn", "#8a5d00", 12),
+    row("network", "Network", r$network),
+    row("id", "PlugShare ID", r$location_id),
+    row("clock", "Flagged", flagged),
+    cta)
 }
 
 # =============================================================================
@@ -1060,24 +1101,11 @@ server <- function(input, output, session) {
       add_indiana(fill = TRUE)
     if (nrow(rdf) == 0)
       return(map %>% fitBounds(IN_BBOX$xmin, IN_BBOX$ymin, IN_BBOX$xmax, IN_BBOX$ymax))
-    popups <- vapply(seq_len(nrow(rdf)), function(i) {
-      r <- rdf[i, ]
-      link <- if (!is.na(r$plugshare_url) && r$plugshare_url != "")
-        sprintf("<br><a href='%s' target='_blank' rel='noopener'>Verify on PlugShare &#8599;</a>", r$plugshare_url) else ""
-      paste0(
-        "<div style='min-width:190px'>",
-        "<div style='font-weight:800;color:#0B2D5B;font-size:13px'>", htmlEscape(r$station_name), "</div>",
-        "<div style='color:#5b6472;font-size:12px;margin:2px 0 6px'>", htmlEscape(r$address), "</div>",
-        "<div style='font-size:12px'>Network: <b>", ifelse(is.na(r$network)||r$network=="","—",htmlEscape(r$network)), "</b></div>",
-        "<div style='font-size:12px'>PlugShare ID: <b>", ifelse(r$location_id=="","—",r$location_id), "</b></div>",
-        if (!is.na(r$review_at) && r$review_at != "")
-          paste0("<div style='font-size:12px'>Flagged: ", substr(r$review_at,1,16), "</div>") else "",
-        "<div style='margin-top:6px;color:#9a6b00;font-weight:700;font-size:12px'>Needs review</div>",
-        link, "</div>")
-    }, character(1))
+    popups <- vapply(seq_len(nrow(rdf)), function(i) make_review_popup(rdf[i, ]), character(1))
     map <- map %>% addCircleMarkers(lng = rdf$lon, lat = rdf$lat, radius = 10,
       color = "#7a5600", weight = 1.5, fillColor = INDOT$amber, fillOpacity = .92,
-      label = lapply(rdf$station_name, HTML), popup = popups)
+      label = lapply(rdf$station_name, HTML), popup = popups,
+      popupOptions = popupOptions(className = "rv-popup", maxWidth = 320))
     if (nrow(rdf) == 1)
       map %>% setView(rdf$lon[1], rdf$lat[1], zoom = 9)
     else

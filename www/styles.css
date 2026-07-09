@@ -297,3 +297,12 @@ body.app-authed #login-overlay{ display:none !important; }
 .ns-typechip{font-size:10.5px;font-weight:700;color:var(--navy);background:#eef2f8;
   border:1px solid var(--border);border-radius:999px;padding:1px 8px}
 .ns-confchip{font-size:10.5px;font-weight:800;border-radius:999px;padding:1px 8px}
+
+/* Review-map popup — enterprise card frame */
+.rv-popup .leaflet-popup-content-wrapper{
+  border-radius:14px;box-shadow:0 12px 34px rgba(11,45,91,.20);
+  border:1px solid #e7ebf2;padding:2px}
+.rv-popup .leaflet-popup-content{margin:14px 16px;line-height:1.35}
+.rv-popup .leaflet-popup-tip{box-shadow:0 12px 34px rgba(11,45,91,.20)}
+.rv-popup a[href]:hover{filter:brightness(1.08)}
+.rv-popup a.leaflet-popup-close-button{color:#9aa3b2;top:8px;right:9px}
