@@ -39,3 +39,6 @@ TEVI_Awarded_Missing_PlugShare.xlsx
 *.xlsx
 data/tracker_store.sqlite
 _*.log
+
+# manager review docs (internal)
+*.pdf
