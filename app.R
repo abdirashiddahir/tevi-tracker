@@ -224,6 +224,13 @@ build_base <- function() {
     op  <- ds %in% c("Open_Creditable", "Other_DCFC")            # already open/operational
     ps  <- switch(ds, "Coming_Soon" = "Coming Soon", "Open_Creditable" = "Operational",
                   "NEVI Awarded Sites" = "Awarded", "Other_DCFC" = "Existing", "Coming Soon")
+    # "Ports" = total connectors (CCS1 + NACS). This is what the tracker's Ports column and the
+    # popup show — NOT charger_count (a site can have 2 chargers but 4 ports). Awarded sites have
+    # no published port detail yet, so show the NEVI minimum of 4; fall back to charger_count.
+    ccs  <- suppressWarnings(as.numeric(r$ccs1_ports))
+    nacs <- suppressWarnings(as.numeric(r$nacs_ports))
+    tot  <- sum(c(ccs, nacs), na.rm = TRUE)
+    ports_val <- if (ds == "NEVI Awarded Sites") "4" else if (tot > 0) as.character(tot) else nzc(r$charger_count)
     data.frame(
       station_id = slugify(nzc(r$address)), station_name = nzc(r$station_name),
       address = nzc(r$address), state = nzc(r$state),
@@ -233,7 +240,7 @@ build_base <- function() {
       ps_status = ps, operational = if (op) "Yes" else "",
       master_operational = op,
       network = nzc(r$network),
-      plugs = nzc(r$ccs1_ports), chargers = nzc(r$charger_count), notes = "",
+      plugs = nzc(r$ccs1_ports), chargers = ports_val, notes = "",  # `chargers` field holds the PORT count (shown as "Ports")
       open_date = "", verified = if (op) "Yes" else "",
       data_source = ds, confidence_level = nzc(r$confidence), is_custom = FALSE,
       stringsAsFactors = FALSE)
@@ -439,11 +446,16 @@ type_label <- function(ds) {
 # "New Coming-Soon" value box (the added-stations category). Independent of the Scenario tool.
 CONF_COLORS <- c("High" = "#990000", "Medium" = "#ffc107", "Low" = "#6c757d")
 conf_color <- function(cl) { v <- unname(CONF_COLORS[as.character(cl)]); ifelse(is.na(v), "#6c757d", v) }
+# The one-word meaning shown alongside each confidence level, per manager request:
+# High = Constructed, Medium = Plans Exist, Low = Announced.
+CONF_MEANING <- c("High" = "Constructed", "Medium" = "Plans Exist", "Low" = "Announced")
+conf_label   <- function(cl) { m <- CONF_MEANING[as.character(cl)]
+  ifelse(is.na(m), as.character(cl), sprintf("%s Confidence (%s)", cl, m)) }
 # Confidence choices: the option LABEL carries the definition (shown in the dropdown),
 # while the stored VALUE stays High/Medium/Low for the rest of the app.
-CONF_CHOICES <- c("High: Site is constructed but not yet powered on" = "High",
-                  "Medium: Plans exist"                             = "Medium",
-                  "Low: Location announced"                         = "Low")
+CONF_CHOICES <- c("High Confidence (Constructed)"   = "High",
+                  "Medium Confidence (Plans Exist)" = "Medium",
+                  "Low Confidence (Announced)"      = "Low")
 
 # ---- Tennessee boundary -----------------------------------------------------
 # Prefer a TDOT/TN state-boundary shapefile (drop it in a "Tennessee_State_Boundary"
@@ -479,12 +491,12 @@ IN_BBOX <- if (!is.null(IN_POLY)) {
 # otherwise a polyline from {maps}. `fill` controls the subtle navy tint.
 add_indiana <- function(lf, fill = TRUE) {
   if (!is.null(IN_POLY)) {
-    lf %>% leaflet::addPolygons(data = IN_POLY, color = INDOT$navy, weight = 2.5,
-      opacity = .95, fill = fill, fillColor = INDOT$navy, fillOpacity = if (fill) 0.05 else 0,
+    lf %>% leaflet::addPolygons(data = IN_POLY, color = "#000000", weight = 2.5,
+      opacity = .95, fill = fill, fillColor = "#000000", fillOpacity = if (fill) 0.04 else 0,
       smoothFactor = 0.5)
   } else {
-    lf %>% addPolylines(lng = IN_BORDER$x, lat = IN_BORDER$y, color = INDOT$navy,
-      weight = 2.5, opacity = .9)
+    lf %>% addPolylines(lng = IN_BORDER$x, lat = IN_BORDER$y, color = "#000000",
+      weight = 2.5, opacity = .95)
   }
 }
 
@@ -548,10 +560,10 @@ make_popup <- function(r) {
             svg_icon("note", "#9aa3b2"), esc(r$notes)) else ""
   # Confidence pill for added stations (shown next to the status badge when present).
   conf_badge <- if (has(r$confidence_level))
-    sprintf("<span style='display:inline-flex;align-items:center;gap:4px;background:%s;color:%s;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.3px;margin-left:6px'>%s CONFIDENCE</span>",
+    sprintf("<span style='display:inline-flex;align-items:center;gap:4px;background:%s;color:%s;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.3px;margin-left:6px'>%s</span>",
             conf_color(r$confidence_level),
             if (identical(as.character(r$confidence_level), "Medium")) "#3a3000" else "#ffffff",
-            esc(toupper(r$confidence_level))) else ""
+            esc(toupper(conf_label(r$confidence_level)))) else ""
   sprintf("<div style='font-family:Inter,Segoe UI,Arial;min-width:262px;max-width:312px'>
       <div style='display:flex;align-items:flex-start;gap:9px'>
         %s
@@ -851,22 +863,23 @@ main_ui <- page_navbar(
         div(class = "about-conf",
           div(class = "about-conf-row",
               tags$span(class = "conf-dot", style = "background:#990000"),
-              tags$b("High"), tags$span("Site is constructed but not yet powered on.")),
+              tags$b("High Confidence (Constructed)"), tags$span("Site is constructed but not yet powered on.")),
           div(class = "about-conf-row",
               tags$span(class = "conf-dot", style = "background:#ffc107"),
-              tags$b("Medium"), tags$span("Plans exist.")),
+              tags$b("Medium Confidence (Plans Exist)"), tags$span("Plans exist.")),
           div(class = "about-conf-row",
               tags$span(class = "conf-dot", style = "background:#6c757d"),
-              tags$b("Low"), tags$span("Location announced.")))),
+              tags$b("Low Confidence (Announced)"), tags$span("Location announced.")))),
       div(class = "about-sec",
         div(class = "about-h", bs_icon("palette-fill"), tags$span("Map colors")),
         tags$p(class = "about-lead",
-          tags$b("Status:"), " Operational (green), Coming Soon (teal), Awarded (navy), ",
+          tags$b("Status:"), " Operational (green), Awarded (navy), ",
           "Needs Review (amber), Existing DCFC (charcoal, off by default). ", tags$b("Coming-Soon stations"),
-          " are colored by confidence - High (crimson), Medium (yellow), Low (gray)."),
+          " are colored by confidence - High/Constructed (crimson), Medium/Plans Exist (yellow), ",
+          "Low/Announced (gray) - with their own legend on the map. The state outline is black."),
         tags$p(class = "about-lead",
           tags$b("Alternative Fuel Corridors:"), " the FHWA-designated NEVI corridors for Tennessee ",
-          "(I-24, I-26, I-40, I-65, I-75, I-81, US-64) draw as an orange overlay you can toggle in the ",
+          "(I-24, I-26, I-40, I-65, I-75, I-81, US-64) draw as a dark-blue overlay you can toggle in the ",
           "map's layers control.")),
       div(class = "about-sec",
         div(class = "about-h", bs_icon("hdd-network-fill"), tags$span("Durable & live")),
@@ -1059,8 +1072,8 @@ server <- function(input, output, session) {
       addPolylines(lng = BS_BORDER$x, lat = BS_BORDER$y, color = "#9aa5b5", weight = 1,
                    opacity = .6, group = "State borders") %>%
       add_indiana(fill = TRUE) %>%
-      {if (!is.null(AFC_TN)) addPolylines(., data = AFC_TN, color = "#E87722",
-        weight = 3.5, opacity = .55, group = "AFC Corridors",
+      {if (!is.null(AFC_TN)) addPolylines(., data = AFC_TN, color = "#12408A",
+        weight = 3.5, opacity = .75, group = "AFC Corridors",
         label = ~PRIMARY_NA) else .} %>%
       addLayersControl(baseGroups = c("ESRI Streets","ESRI Topo","ESRI Imagery"),
                        overlayGroups = if (!is.null(AFC_TN)) "AFC Corridors" else NULL,
@@ -1076,15 +1089,17 @@ server <- function(input, output, session) {
         popup = vapply(seq_len(nrow(m)), function(i) make_popup(m[i, ]), character(1)),
         label = lapply(m$station_name, HTML)) %>%
         addLegend("topright",
-          colors = c(INDOT$green, INDOT$teal, INDOT$navy, INDOT$amber, "#3a3a3a"),
-          labels = c("Operational","Coming Soon","Awarded","Needs Review","Existing DCFC"),
+          colors = c(INDOT$green, INDOT$navy, INDOT$amber, "#3a3a3a"),
+          labels = c("Operational","Awarded","Needs Review","Existing DCFC"),
           title = "Status", opacity = .9, className = "info legend status-legend")
-      # Added-station confidence key (violet ring = user-added; fill = confidence)
-      if (any(isTRUE_vec(m$is_custom) & m$cls == "nc")) {
+      # Coming-Soon stations are colored by CONFIDENCE (not one flat status color), so their
+      # key lives in its own legend — shown whenever any coming-soon (master `cs` or added `nc`)
+      # is on the map. This is what keeps the map colors matching the legend.
+      if (any(m$cls %in% c("cs","nc"), na.rm = TRUE)) {
         proxy %>% addLegend("topright",   # stacks directly under the Status legend
           colors = c(CONF_COLORS[["High"]], CONF_COLORS[["Medium"]], CONF_COLORS[["Low"]]),
-          labels = c("High", "Medium", "Low"),
-          title = "Added station - confidence", opacity = .9,
+          labels = c(conf_label("High"), conf_label("Medium"), conf_label("Low")),
+          title = "Coming Soon - confidence", opacity = .9,
           className = "info legend conf-legend")
       }
     }
@@ -1584,8 +1599,8 @@ server <- function(input, output, session) {
       addPolylines(lng = BS_BORDER$x, lat = BS_BORDER$y, color = "#9aa5b5",
                    weight = 1, opacity = .7) %>%
       add_indiana(fill = TRUE) %>%
-      {if (!is.null(AFC_TN)) addPolylines(., data = AFC_TN, color = "#E87722",
-        weight = 3.5, opacity = .55, group = "AFC Corridors",
+      {if (!is.null(AFC_TN)) addPolylines(., data = AFC_TN, color = "#12408A",
+        weight = 3.5, opacity = .75, group = "AFC Corridors",
         label = ~PRIMARY_NA) else .} %>%
       # No click popup here — clicking a marker fills the sidebar detail panel instead
       # (avoids duplicating the same info on the map and in the sidebar). Hover shows the name.
@@ -1594,14 +1609,14 @@ server <- function(input, output, session) {
         label = lapply(paste0("<b>", htmlEscape(all$station_name), "</b><br>",
                               htmlEscape(all$disp)), HTML)) %>%
       addLegend("topright",
-        colors = c(INDOT$green, INDOT$teal, INDOT$navy, INDOT$amber, "#3a3a3a"),
-        labels = c("Operational","Coming Soon","Awarded","Needs Review","Existing DCFC"),
+        colors = c(INDOT$green, INDOT$navy, INDOT$amber, "#3a3a3a"),
+        labels = c("Operational","Awarded","Needs Review","Existing DCFC"),
         title = "Status", opacity = .9, className = "info legend status-legend") %>%
-      {if (any(all$cls == "nc", na.rm = TRUE))
+      {if (any(all$cls %in% c("cs","nc"), na.rm = TRUE))
          addLegend(., "topright",
            colors = c(CONF_COLORS[["High"]], CONF_COLORS[["Medium"]], CONF_COLORS[["Low"]]),
-           labels = c("High", "Medium", "Low"),
-           title = "Added station - confidence", opacity = .9,
+           labels = c(conf_label("High"), conf_label("Medium"), conf_label("Low")),
+           title = "Coming Soon - confidence", opacity = .9,
            className = "info legend conf-legend")
        else .} %>%
       fitBounds(IN_BBOX$xmin, IN_BBOX$ymin, IN_BBOX$xmax, IN_BBOX$ymax)
