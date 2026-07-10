@@ -338,6 +338,65 @@ reset_review <- function(id) {
                           as.character(Sys.time()), id))
 }
 
+# ---- ArcGIS Online sync (STAGED — inert until switched on) -------------------
+# Publishes the tracker's authoritative Coming Soon / Open creditable stations to
+# the two TDOT hosted feature layers so the public web map stays current.
+# COMPLETELY INERT until ALL of these are true (nothing runs otherwise):
+#   1. env  ARC_SYNC_ENABLED=true   (the master switch — default off)
+#   2. env  ARC_CLIENT_ID / ARC_CLIENT_SECRET  (an ArcGIS OAuth app with EDIT rights)
+#      optional ARC_PORTAL (default https://hntbcorp.maps.arcgis.com)
+#   3. editing enabled on the layers + install.packages(c("arcgislayers","sf"))
+# See the field-guide "Build sheet: TN ArcGIS wiring" for the security/view model.
+ARC_SVC <- paste0("https://services.arcgis.com/rD2ylXRs80UroD90/arcgis/rest/",
+                  "services/TEVI_Out_of_State_NEVI_Compliant_Open/FeatureServer")
+ARC_LAYER <- list(coming_soon = paste0(ARC_SVC, "/0"),   # String port fields
+                  open        = paste0(ARC_SVC, "/1"))   # Integer port fields
+
+sync_to_arcgis <- function() {
+  if (!identical(tolower(Sys.getenv("ARC_SYNC_ENABLED", "")), "true"))
+    return(invisible(FALSE))                              # <-- master switch: OFF by default
+  if (!requireNamespace("arcgislayers", quietly = TRUE) ||
+      !requireNamespace("sf", quietly = TRUE)) {
+    warning("ArcGIS sync: install.packages(c('arcgislayers','sf')) first")
+    return(invisible(FALSE))
+  }
+  # 1) current truth = master CSV + the tracker's confirmed-operational overrides
+  raw <- read.csv(find_file("master_Data_TN.csv"), stringsAsFactors = FALSE, fileEncoding = "UTF-8")
+  con <- dbConnect(SQLite(), DB_PATH)
+  trk <- dbGetQuery(con, "SELECT station_id, operational FROM tracking"); dbDisconnect(con)
+  live <- trk$station_id[trk$operational == "Yes"]
+  flip <- raw$data_source == "Coming_Soon" & vapply(raw$address, slugify, "") %in% live
+  raw$data_source[flip] <- "Open_Creditable"; raw$status[flip] <- "Open"   # confirmed CS -> Open
+
+  # 2) build sf points in the layer's spatial reference (2274), typed per layer
+  build <- function(df, integer_ports) {
+    if (nrow(df) == 0) return(NULL)
+    portcols <- c("ccs1_ports","ccs1_power_per_port","nacs_ports","nacs_power_per_port","charger_count")
+    for (col in intersect(portcols, names(df)))
+      df[[col]] <- if (integer_ports) suppressWarnings(as.integer(df[[col]])) else as.character(df[[col]])
+    keep <- c("station_name","site_type","status","address","state","latitude","longitude",
+              "network","PlugShare_link", portcols, "open_24_7","NEVI_creditable","AFC")
+    df <- df[, intersect(keep, names(df)), drop = FALSE]
+    names(df)[names(df) == "latitude"] <- "lat"; names(df)[names(df) == "longitude"] <- "long"
+    sf::st_transform(sf::st_as_sf(df, coords = c("long","lat"), crs = 4326, remove = FALSE), 2274)
+  }
+  cs   <- build(raw[raw$data_source == "Coming_Soon", ],     FALSE)   # Layer 0
+  open <- build(raw[raw$data_source == "Open_Creditable", ], TRUE)    # Layer 1
+
+  # 3) authenticate (app credential) + replace each layer's features
+  arcgislayers::set_arc_token(arcgisutils::auth_client(
+    client_id     = Sys.getenv("ARC_CLIENT_ID"),
+    client_secret = Sys.getenv("ARC_CLIENT_SECRET"),
+    host          = Sys.getenv("ARC_PORTAL", "https://hntbcorp.maps.arcgis.com")))
+  push <- function(url, sfx) {
+    if (is.null(sfx)) return(invisible())
+    lyr <- arcgislayers::arc_open(url)
+    arcgislayers::truncate_layer(lyr); arcgislayers::add_features(lyr, sfx)
+  }
+  push(ARC_LAYER$coming_soon, cs); push(ARC_LAYER$open, open)
+  invisible(TRUE)
+}
+
 # ---- Shared Status API integration (the "post" side) ------------------------
 # When a station is confirmed operational here, ALSO push it to the shared status
 # API so the Scenario Analysis tool can read it on refresh and move the station
@@ -435,8 +494,10 @@ status_label <- function(op, ps) ifelse(grepl("Existing", ps), "Existing DCFC",
   ifelse(ps == "", "Coming Soon", ps))))
 
 # ---- Station-type & confidence labels/colors (shared with the Scenario tool) --
-TYPE_LABELS <- c("Coming_Soon" = "Coming Soon", "NEVI Awarded Sites" = "NEVI Awarded",
-                 "Open_Creditable" = "Open (Creditable)", "Other_DCFC" = "Existing DCFC")
+# Layer/type labels — kept consistent with the TDOT ArcGIS web map legend.
+TYPE_LABELS <- c("Coming_Soon" = "Creditable Stations (Coming Soon)",
+                 "NEVI Awarded Sites" = "TEVI Round 1 Award Stations",
+                 "Open_Creditable" = "Creditable Stations (Open)", "Other_DCFC" = "Existing DCFC")
 type_label <- function(ds) {
   ds <- as.character(ds); lbl <- unname(TYPE_LABELS[ds])
   ifelse(is.na(lbl), ifelse(nzchar(ds), ds, "Coming Soon"), lbl)
@@ -639,15 +700,15 @@ theme_app <- bs_theme(version = 5, bootswatch = "flatly",
 kpi_row <- function() layout_columns(col_widths = NULL, fill = FALSE,
   value_box("Tracked", textOutput("kpi_total", inline = TRUE),
             showcase = bs_icon("ev-station-fill"), theme = value_box_theme(bg = INDOT$navy, fg = "white")),
-  value_box("Operational", textOutput("kpi_op", inline = TRUE),
+  value_box("Creditable · Open", textOutput("kpi_op", inline = TRUE),
             showcase = bs_icon("check-circle-fill"), theme = value_box_theme(bg = INDOT$green, fg = "white")),
-  value_box("Coming Soon", textOutput("kpi_cs", inline = TRUE),
+  value_box("Creditable · Coming Soon", textOutput("kpi_cs", inline = TRUE),
             showcase = bs_icon("clock-fill"), theme = value_box_theme(bg = INDOT$teal, fg = "white")),
   value_box("New Coming-Soon", textOutput("kpi_nc", inline = TRUE),
             showcase = bs_icon("plus-circle-fill"), theme = value_box_theme(bg = INDOT$newcs, fg = "white")),
   value_box("Needs Review", textOutput("kpi_review", inline = TRUE),
             showcase = bs_icon("exclamation-triangle-fill"), theme = value_box_theme(bg = INDOT$amber, fg = "white")),
-  value_box("Awarded", textOutput("kpi_awarded", inline = TRUE),
+  value_box("Award Stations", textOutput("kpi_awarded", inline = TRUE),
             showcase = bs_icon("award-fill"), theme = value_box_theme(bg = INDOT$navy, fg = "white")),
   value_box("Existing DCFC", textOutput("kpi_dcfc", inline = TRUE),
             showcase = bs_icon("ev-station"), theme = value_box_theme(bg = INDOT$gray, fg = "white")))
@@ -656,7 +717,13 @@ app_sidebar <- sidebar(width = 300, title = "Filters & actions", open = "open",
   div(class = "filter-section",
     tags$label("Status", class = "filter-label"),
     checkboxGroupInput("flt_status", NULL,
-      choices  = c("Operational","Coming Soon","Awarded","Existing DCFC","Under Repair","Not found"),
+      # Labels match the ArcGIS web-map legend; values stay the tracker's internal status keys.
+      choices  = c("Creditable Stations (Open)"        = "Operational",
+                   "Creditable Stations (Coming Soon)" = "Coming Soon",
+                   "TEVI Round 1 Award Stations"       = "Awarded",
+                   "Existing DCFC"                     = "Existing DCFC",
+                   "Under Repair"                      = "Under Repair",
+                   "Not found"                         = "Not found"),
       # "Existing DCFC" is context — OFF by default; toggle it on to see existing chargers.
       selected = c("Operational","Coming Soon","Awarded","Under Repair","Not found"))),
   div(class = "filter-section",
@@ -700,8 +767,10 @@ main_ui <- page_navbar(
         div(class = "tbl-layer-bar",
           tags$span(class = "fw-bold small", "Layer:"),
           selectInput("tbl_layer", NULL, width = "230px",
-            choices = c("All layers" = "all", "Coming Soon" = "Coming_Soon",
-                        "Awarded" = "NEVI Awarded Sites", "Open (Creditable)" = "Open_Creditable",
+            choices = c("All layers" = "all",
+                        "Creditable Stations (Open)" = "Open_Creditable",
+                        "Creditable Stations (Coming Soon)" = "Coming_Soon",
+                        "TEVI Round 1 Award Stations" = "NEVI Awarded Sites",
                         "Existing DCFC" = "Other_DCFC"), selected = "all")),
         helpText("Double-click PlugShare status / Operational / Network / Ports / Notes to edit."),
         withSpinner(DTOutput("tbl"), color = INDOT$navy, type = 8)))),
@@ -766,9 +835,9 @@ main_ui <- page_navbar(
                          value = NA, min = -180, max = 180, step = 0.000001)),
           layout_columns(col_widths = c(6, 6),
             selectInput("ns_type", HTML('Station type <span class="req">*</span>'),
-                        choices = c("Coming Soon" = "Coming_Soon",
-                                    "NEVI Awarded" = "NEVI Awarded Sites",
-                                    "Open (Creditable)" = "Open_Creditable",
+                        choices = c("Creditable Stations (Coming Soon)" = "Coming_Soon",
+                                    "TEVI Round 1 Award Stations" = "NEVI Awarded Sites",
+                                    "Creditable Stations (Open)" = "Open_Creditable",
                                     "Existing DCFC" = "Other_DCFC")),
             conditionalPanel("input.ns_type == 'Coming_Soon'",   # confidence only for Coming Soon
               selectInput("ns_conf", "Confidence level",
@@ -1073,10 +1142,10 @@ server <- function(input, output, session) {
                    opacity = .6, group = "State borders") %>%
       add_indiana(fill = TRUE) %>%
       {if (!is.null(AFC_TN)) addPolylines(., data = AFC_TN, color = "#12408A",
-        weight = 3.5, opacity = .75, group = "EV AFCs",
+        weight = 3.5, opacity = .75, group = "EV AFC",
         label = ~PRIMARY_NA) else .} %>%
       addLayersControl(baseGroups = c("ESRI Streets","ESRI Topo","ESRI Imagery"),
-                       overlayGroups = if (!is.null(AFC_TN)) "EV AFCs" else NULL,
+                       overlayGroups = if (!is.null(AFC_TN)) "EV AFC" else NULL,
                        options = layersControlOptions(collapsed = FALSE)) %>%
       fitBounds(IN_BBOX$xmin, IN_BBOX$ymin, IN_BBOX$xmax, IN_BBOX$ymax)
   })
@@ -1090,7 +1159,7 @@ server <- function(input, output, session) {
         label = lapply(m$station_name, HTML)) %>%
         addLegend("topright",
           colors = c(INDOT$green, INDOT$navy, INDOT$amber, "#3a3a3a"),
-          labels = c("Operational","Awarded","Needs Review","Existing DCFC"),
+          labels = c("Creditable Stations (Open)","TEVI Round 1 Award Stations","Needs Review","Existing DCFC"),
           title = "Status", opacity = .9, className = "info legend status-legend")
       # Coming-Soon stations are colored by CONFIDENCE (not one flat status color), so their
       # key lives in its own legend — shown whenever any coming-soon (master `cs` or added `nc`)
@@ -1099,7 +1168,7 @@ server <- function(input, output, session) {
         proxy %>% addLegend("topright",   # stacks directly under the Status legend
           colors = c(CONF_COLORS[["High"]], CONF_COLORS[["Medium"]], CONF_COLORS[["Low"]]),
           labels = c(conf_label("High"), conf_label("Medium"), conf_label("Low")),
-          title = "Coming Soon - confidence", opacity = .9,
+          title = "Creditable (Coming Soon) — confidence", opacity = .9,
           className = "info legend conf-legend")
       }
     }
@@ -1348,8 +1417,11 @@ server <- function(input, output, session) {
       row <- merged()[merged()$station_id == id, ][1, ]   # the confirmed station's row
       nm  <- row$station_name
       confirm_operational(id); rv$track <- read_tracking() # existing: save locally
-      post_operational(id, row$address,                    # NEW: push to the shared API
+      post_operational(id, row$address,                    # push to the shared status API
                        if (!is.null(row$open_date)) row$open_date else "")
+      tryCatch(sync_to_arcgis(),                           # STAGED: no-op unless ARC_SYNC_ENABLED=true
+               error = function(e) showNotification(
+                 paste("ArcGIS sync failed:", conditionMessage(e)), type = "error"))
       showNotification(HTML(paste0("<b>", htmlEscape(nm), "</b> confirmed Operational.<br>",
         "<span style='font-size:11px'>Saved to the tracker &amp; pushed to the status API — ",
         "promote to master_Data.csv after review.</span>")),
@@ -1594,13 +1666,13 @@ server <- function(input, output, session) {
       addProviderTiles(providers$Esri.WorldTopoMap,   group = "ESRI Topo") %>%
       addProviderTiles(providers$Esri.WorldImagery,   group = "ESRI Imagery") %>%
       addLayersControl(baseGroups = c("ESRI Streets","ESRI Topo","ESRI Imagery"),
-                       overlayGroups = if (!is.null(AFC_TN)) "EV AFCs" else NULL,
+                       overlayGroups = if (!is.null(AFC_TN)) "EV AFC" else NULL,
                        options = layersControlOptions(collapsed = TRUE)) %>%
       addPolylines(lng = BS_BORDER$x, lat = BS_BORDER$y, color = "#9aa5b5",
                    weight = 1, opacity = .7) %>%
       add_indiana(fill = TRUE) %>%
       {if (!is.null(AFC_TN)) addPolylines(., data = AFC_TN, color = "#12408A",
-        weight = 3.5, opacity = .75, group = "EV AFCs",
+        weight = 3.5, opacity = .75, group = "EV AFC",
         label = ~PRIMARY_NA) else .} %>%
       # No click popup here — clicking a marker fills the sidebar detail panel instead
       # (avoids duplicating the same info on the map and in the sidebar). Hover shows the name.
@@ -1610,13 +1682,13 @@ server <- function(input, output, session) {
                               htmlEscape(all$disp)), HTML)) %>%
       addLegend("topright",
         colors = c(INDOT$green, INDOT$navy, INDOT$amber, "#3a3a3a"),
-        labels = c("Operational","Awarded","Needs Review","Existing DCFC"),
+        labels = c("Creditable Stations (Open)","TEVI Round 1 Award Stations","Needs Review","Existing DCFC"),
         title = "Status", opacity = .9, className = "info legend status-legend") %>%
       {if (any(all$cls %in% c("cs","nc"), na.rm = TRUE))
          addLegend(., "topright",
            colors = c(CONF_COLORS[["High"]], CONF_COLORS[["Medium"]], CONF_COLORS[["Low"]]),
            labels = c(conf_label("High"), conf_label("Medium"), conf_label("Low")),
-           title = "Coming Soon - confidence", opacity = .9,
+           title = "Creditable (Coming Soon) — confidence", opacity = .9,
            className = "info legend conf-legend")
        else .} %>%
       fitBounds(IN_BBOX$xmin, IN_BBOX$ymin, IN_BBOX$xmax, IN_BBOX$ymax)
