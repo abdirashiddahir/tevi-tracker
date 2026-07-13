@@ -396,9 +396,9 @@ sync_to_arcgis <- function() {
     arcgisutils::auth_key(Sys.getenv("ARC_API_KEY"))
   } else {
     arcgisutils::auth_client(
-      client_id     = Sys.getenv("ARC_CLIENT_ID"),
-      client_secret = Sys.getenv("ARC_CLIENT_SECRET"),
-      host          = Sys.getenv("ARC_PORTAL", "https://hntbcorp.maps.arcgis.com"))
+      client = Sys.getenv("ARC_CLIENT_ID"),      # arcgisutils uses `client`/`secret`
+      secret = Sys.getenv("ARC_CLIENT_SECRET"),
+      host   = Sys.getenv("ARC_PORTAL", "https://hntbcorp.maps.arcgis.com"))
   }
   arcgislayers::set_arc_token(tok)
   push <- function(url, sfx) {
