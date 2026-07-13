@@ -713,6 +713,18 @@ kpi_row <- function() layout_columns(col_widths = NULL, fill = FALSE,
   value_box("Existing DCFC", textOutput("kpi_dcfc", inline = TRUE),
             showcase = bs_icon("ev-station"), theme = value_box_theme(bg = INDOT$gray, fg = "white")))
 
+# Manual "Sync to ArcGIS map" control — only appears once sync is switched on
+# (ARC_SYNC_ENABLED=true), so it's invisible until the integration is live.
+arc_sync_ui <- if (identical(tolower(Sys.getenv("ARC_SYNC_ENABLED", "")), "true"))
+  tagList(
+    tags$hr(),
+    tags$label("ArcGIS web map", class = "filter-label"),
+    actionButton("sync_arcgis", "Sync to ArcGIS map", icon = icon("cloud-arrow-up"),
+                 class = "btn btn-outline-primary btn-sm w-100"),
+    tags$p(class = "text-muted small mt-2",
+      "Re-publishes all creditable stations to the TDOT ArcGIS web map."))
+  else NULL
+
 app_sidebar <- sidebar(width = 300, title = "Filters & actions", open = "open",
   div(class = "filter-section",
     tags$label("Status", class = "filter-label"),
@@ -740,6 +752,7 @@ app_sidebar <- sidebar(width = 300, title = "Filters & actions", open = "open",
   actionButton("refresh", "Reload saved data", icon = icon("rotate"),
                class = "btn btn-outline-primary btn-sm w-100 mt-1"),
   tags$p(class = "text-muted small mt-2", textOutput("last_check_txt")),
+  arc_sync_ui,
   div(class = "sidebar-logos",
     tags$img(src = "TDOT_logo.png", alt = "Tennessee Department of Transportation"),
     tags$span(class = "logo-chip", tags$img(src = "hntb_logo.png", alt = "HNTB"))))
@@ -1245,6 +1258,22 @@ server <- function(input, output, session) {
     }
   })
   observeEvent(input$refresh, { rv$track <- read_tracking() })
+
+  # Manual full re-publish to the ArcGIS web map (button only present when enabled).
+  observeEvent(input$sync_arcgis, {
+    showNotification("Syncing to the ArcGIS web map…", id = "arcsync", duration = NULL)
+    res <- tryCatch(sync_to_arcgis(), error = function(e) e)
+    removeNotification("arcsync")
+    if (inherits(res, "error"))
+      showNotification(paste("ArcGIS sync failed:", conditionMessage(res)),
+                       type = "error", duration = 10)
+    else if (isFALSE(res))
+      showNotification("ArcGIS sync is not enabled (set ARC_SYNC_ENABLED + credentials).",
+                       type = "warning", duration = 8)
+    else
+      showNotification("Creditable stations published to the ArcGIS web map.",
+                       type = "message", duration = 6)
+  }, ignoreInit = TRUE)
   output$dl_csv <- downloadHandler(
     filename = function() "coming_soon_tracker_export.csv",
     content = function(file) {
