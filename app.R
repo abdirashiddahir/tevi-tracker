@@ -404,7 +404,10 @@ sync_to_arcgis <- function() {
   push <- function(url, sfx) {
     if (is.null(sfx)) return(invisible())
     lyr <- arcgislayers::arc_open(url)
-    arcgislayers::truncate_layer(lyr); arcgislayers::add_features(lyr, sfx)
+    # Views don't support `truncate`; delete-all + add is the equivalent that works
+    # through standard edit operations (Add/Update/Delete) enabled on the view.
+    arcgislayers::delete_features(lyr, where = "1=1")
+    arcgislayers::add_features(lyr, sfx)
   }
   push(ARC_LAYER$coming_soon, cs); push(ARC_LAYER$open, open)
   invisible(TRUE)
