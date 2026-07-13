@@ -400,7 +400,7 @@ sync_to_arcgis <- function() {
       secret = Sys.getenv("ARC_CLIENT_SECRET"),
       host   = Sys.getenv("ARC_PORTAL", "https://hntbcorp.maps.arcgis.com"))
   }
-  arcgislayers::set_arc_token(tok)
+  arcgisutils::set_arc_token(tok)
   push <- function(url, sfx) {
     if (is.null(sfx)) return(invisible())
     lyr <- arcgislayers::arc_open(url)
