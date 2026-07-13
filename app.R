@@ -715,7 +715,7 @@ kpi_row <- function() layout_columns(col_widths = NULL, fill = FALSE,
 
 # Manual "Sync to ArcGIS map" control — only appears once sync is switched on
 # (ARC_SYNC_ENABLED=true), so it's invisible until the integration is live.
-arc_sync_ui <- if (identical(tolower(Sys.getenv("ARC_SYNC_ENABLED", "")), "true"))
+arc_sync_ui <- if (identical(tolower(Sys.getenv("ARC_SYNC_ENABLED", "")), "true")) {
   tagList(
     tags$hr(),
     tags$label("ArcGIS web map", class = "filter-label"),
@@ -723,7 +723,7 @@ arc_sync_ui <- if (identical(tolower(Sys.getenv("ARC_SYNC_ENABLED", "")), "true"
                  class = "btn btn-outline-primary btn-sm w-100"),
     tags$p(class = "text-muted small mt-2",
       "Re-publishes all creditable stations to the TDOT ArcGIS web map."))
-  else NULL
+} else NULL
 
 app_sidebar <- sidebar(width = 300, title = "Filters & actions", open = "open",
   div(class = "filter-section",

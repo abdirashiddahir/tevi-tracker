@@ -268,6 +268,163 @@
         "RemoteSha": "1.1.1"
       }
     },
+    "RcppSimdJson": {
+      "Source": "CRAN",
+      "Repository": "https://cloud.r-project.org",
+      "description": {
+        "Package": "RcppSimdJson",
+        "Type": "Package",
+        "Title": "'Rcpp' Bindings for the 'simdjson' Header-Only Library for\n'JSON' Parsing",
+        "Version": "0.1.15",
+        "Date": "2026-01-14",
+        "Authors@R": "c(person(\"Dirk\", \"Eddelbuettel\", role = c(\"aut\", \"cre\"), email = \"edd@debian.org\",\n                    comment = c(ORCID = \"0000-0001-6419-907X\")),\n             person(\"Brendan\", \"Knapp\", role = \"aut\",\n                    comment = c(ORCID = \"0000-0003-3284-4972\")),\n             person(\"Daniel\", \"Lemire\", role = \"aut\",\n                    comment = c(ORCID = \"0000-0003-3306-6922\")))",
+        "Description": "The 'JSON' format is ubiquitous for data interchange, and the\n 'simdjson' library written by Daniel Lemire (and many contributors) provides a\n high-performance parser for these files which by relying on parallel 'SIMD'\n instruction manages to parse these files as faster than disk speed. See the\n <doi:10.48550/arXiv.1902.08318> paper for more details about 'simdjson'.  This\n package parses 'JSON' from string, file, or remote URLs under a variety of\n settings.",
+        "License": "GPL (>= 2)",
+        "Imports": "Rcpp, utils",
+        "LinkingTo": "Rcpp",
+        "Suggests": "bit64, tinytest",
+        "URL": "https://github.com/eddelbuettel/rcppsimdjson/",
+        "BugReports": "https://github.com/eddelbuettel/rcppsimdjson/issues",
+        "RoxygenNote": "7.1.1",
+        "Encoding": "UTF-8",
+        "NeedsCompilation": "yes",
+        "Packaged": "2026-01-14 12:10:02 UTC; edd",
+        "Author": "Dirk Eddelbuettel [aut, cre] (ORCID:\n    <https://orcid.org/0000-0001-6419-907X>),\n  Brendan Knapp [aut] (ORCID: <https://orcid.org/0000-0003-3284-4972>),\n  Daniel Lemire [aut] (ORCID: <https://orcid.org/0000-0003-3306-6922>)",
+        "Maintainer": "Dirk Eddelbuettel <edd@debian.org>",
+        "Repository": "CRAN",
+        "Date/Publication": "2026-01-14 12:40:02 UTC",
+        "Built": "R 4.5.3; x86_64-w64-mingw32; 2026-07-08 01:11:14 UTC; windows",
+        "Archs": "x64"
+      }
+    },
+    "S7": {
+      "Source": "CRAN",
+      "Repository": "https://cloud.r-project.org",
+      "description": {
+        "Package": "S7",
+        "Title": "An Object Oriented System Meant to Become a Successor to S3 and\nS4",
+        "Version": "0.2.1",
+        "Authors@R": "c(\n    person(\"Object-Oriented Programming Working Group\", role = \"cph\"),\n    person(\"Davis\", \"Vaughan\", role = \"aut\"),\n    person(\"Jim\", \"Hester\", role = \"aut\",\n           comment = c(ORCID = \"0000-0002-2739-7082\")),\n    person(\"Tomasz\", \"Kalinowski\", role = \"aut\"),\n    person(\"Will\", \"Landau\", role = \"aut\"),\n    person(\"Michael\", \"Lawrence\", role = \"aut\"),\n    person(\"Martin\", \"Maechler\", role = \"aut\",\n           comment = c(ORCID = \"0000-0002-8685-9910\")),\n    person(\"Luke\", \"Tierney\", role = \"aut\"),\n    person(\"Hadley\", \"Wickham\", , \"hadley@posit.co\", role = c(\"aut\", \"cre\"),\n           comment = c(ORCID = \"0000-0003-4757-117X\"))\n  )",
+        "Description": "A new object oriented programming system designed to be a\n    successor to S3 and S4. It includes formal class, generic, and method\n    specification, and a limited form of multiple dispatch. It has been\n    designed and implemented collaboratively by the R Consortium\n    Object-Oriented Programming Working Group, which includes\n    representatives from R-Core, 'Bioconductor', 'Posit'/'tidyverse', and\n    the wider R community.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://rconsortium.github.io/S7/,\nhttps://github.com/RConsortium/S7",
+        "BugReports": "https://github.com/RConsortium/S7/issues",
+        "Depends": "R (>= 3.5.0)",
+        "Imports": "utils",
+        "Suggests": "bench, callr, covr, knitr, methods, rmarkdown, testthat (>=\n3.2.0), tibble",
+        "VignetteBuilder": "knitr",
+        "Config/build/compilation-database": "true",
+        "Config/Needs/website": "sloop",
+        "Config/testthat/edition": "3",
+        "Config/testthat/parallel": "TRUE",
+        "Config/testthat/start-first": "external-generic",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.3",
+        "NeedsCompilation": "yes",
+        "Packaged": "2025-11-14 13:45:25 UTC; hadleywickham",
+        "Author": "Object-Oriented Programming Working Group [cph],\n  Davis Vaughan [aut],\n  Jim Hester [aut] (ORCID: <https://orcid.org/0000-0002-2739-7082>),\n  Tomasz Kalinowski [aut],\n  Will Landau [aut],\n  Michael Lawrence [aut],\n  Martin Maechler [aut] (ORCID: <https://orcid.org/0000-0002-8685-9910>),\n  Luke Tierney [aut],\n  Hadley Wickham [aut, cre] (ORCID:\n    <https://orcid.org/0000-0003-4757-117X>)",
+        "Maintainer": "Hadley Wickham <hadley@posit.co>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-11-14 19:50:02 UTC",
+        "Built": "R 4.5.2; x86_64-w64-mingw32; 2026-02-18 01:42:28 UTC; windows",
+        "Archs": "x64",
+        "RemoteType": "standard",
+        "RemotePkgRef": "S7",
+        "RemoteRef": "S7",
+        "RemoteRepos": "https://cran.rstudio.com",
+        "RemoteSha": "0.2.1"
+      }
+    },
+    "arcgislayers": {
+      "Source": "CRAN",
+      "Repository": "https://cloud.r-project.org",
+      "description": {
+        "Type": "Package",
+        "Package": "arcgislayers",
+        "Title": "Harness ArcGIS Data Services",
+        "Version": "0.6.1",
+        "Authors@R": "c(\n    person(\"Josiah\", \"Parry\", , \"josiah.parry@gmail.com\", role = c(\"aut\", \"cre\"),\n           comment = c(ORCID = \"0000-0001-9910-865X\")),\n    person(\"Eli\", \"Pousson\", , \"eli.pousson@gmail.com\", role = \"ctb\",\n           comment = c(ORCID = \"0000-0001-8280-1706\")),\n    person(\"Kenneth\", \"Vernon\", , \"kenneth.b.vernon@gmail.com\", role = \"ctb\",\n           comment = c(ORCID = \"0000-0003-0098-5092\")),\n    person(\"Martha\", \"Bass\", role = \"ctb\",\n           comment = c(ORCID = \"0009-0004-0268-5426\")),\n    person(\"Antony\", \"Barja\", role = \"ctb\",\n           comment = c(ORCID = \"0000-0001-5921-2858\"))\n  )",
+        "Description": "Enables users of 'ArcGIS Enterprise', 'ArcGIS Online', or\n    'ArcGIS Platform' to read, write, publish, or manage vector and raster\n    data via ArcGIS location services REST API endpoints\n    <https://developers.arcgis.com/rest/>.",
+        "License": "Apache License (>= 2)",
+        "URL": "https://developers.arcgis.com/r-bridge,\nhttps://github.com/R-ArcGIS/arcgislayers",
+        "BugReports": "https://github.com/R-ArcGIS/arcgislayers/issues",
+        "Depends": "R (>= 4.2.0)",
+        "Imports": "arcgisutils (>= 0.4.0), arcpbf (>= 0.1.5), cli, httr2 (>=\n1.0.5), jsonify, lifecycle, RcppSimdJson (>= 0.1.13), rlang,\nsf, terra, utils, yyjsonr",
+        "Suggests": "testthat (>= 3.0.0), vctrs, curl, dplyr",
+        "Config/testthat/edition": "3",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.3",
+        "NeedsCompilation": "no",
+        "Packaged": "2026-07-10 19:17:08 UTC; josiahparry",
+        "Author": "Josiah Parry [aut, cre] (ORCID:\n    <https://orcid.org/0000-0001-9910-865X>),\n  Eli Pousson [ctb] (ORCID: <https://orcid.org/0000-0001-8280-1706>),\n  Kenneth Vernon [ctb] (ORCID: <https://orcid.org/0000-0003-0098-5092>),\n  Martha Bass [ctb] (ORCID: <https://orcid.org/0009-0004-0268-5426>),\n  Antony Barja [ctb] (ORCID: <https://orcid.org/0000-0001-5921-2858>)",
+        "Maintainer": "Josiah Parry <josiah.parry@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2026-07-10 20:10:16 UTC",
+        "Built": "R 4.5.3; ; 2026-07-10 23:54:30 UTC; windows"
+      }
+    },
+    "arcgisutils": {
+      "Source": "CRAN",
+      "Repository": "https://cloud.r-project.org",
+      "description": {
+        "Package": "arcgisutils",
+        "Title": "R-ArcGIS Bridge Utility Functions",
+        "Version": "0.6.0",
+        "Authors@R": "c(\n    person(\"Josiah\", \"Parry\", , \"josiah.parry@gmail.com\", role = c(\"aut\", \"cre\"),\n           comment = c(ORCID = \"0000-0001-9910-865X\")),\n    person(\"Kenneth\", \"Vernon\", , \"kenneth.b.vernon@gmail.com\", role = \"ctb\",\n           comment = c(ORCID = \"0000-0003-0098-5092\")),\n    person(\"Martha\", \"Bass\", role = \"ctb\",\n           comment = c(ORCID = \"0009-0004-0268-5426\")),\n    person(\"Eli\", \"Pousson\", , \"eli.pousson@gmail.com\", role = \"ctb\",\n           comment = c(ORCID = \"0000-0001-8280-1706\")),\n    person(\"Ryan\", \"Zomorrodi\", , \"ryanzomorrodi@gmail.com\", role = \"ctb\",\n           comment = c(ORCID = \"0009-0003-6417-5985\"))\n  )",
+        "Description": "Developer oriented utility functions designed to be used as\n    the building blocks of R packages that work with ArcGIS Location\n    Services. It provides functionality for authorization, Esri JSON\n    construction and parsing, as well as other utilities pertaining to\n    geometry and Esri type conversions. To support 'ArcGIS Pro' users,\n    authorization can be done via 'arcgisbinding'. Installation\n    instructions for 'arcgisbinding' can be found at\n    <https://developers.arcgis.com/r-bridge/installation/>.",
+        "License": "Apache License (>= 2)",
+        "URL": "https://github.com/R-ArcGIS/arcgisutils,\nhttps://developers.arcgis.com/r-bridge/api-reference/arcgisutils/",
+        "BugReports": "https://github.com/R-ArcGIS/arcgisutils/issues",
+        "Depends": "R (>= 4.2)",
+        "Imports": "cli, httr2 (>= 1.0.5), R6, RcppSimdJson, rlang, S7, sf, utils,\nyyjsonr, lifecycle",
+        "Suggests": "arcgisbinding, collapse (>= 2.0.0), data.table, jsonify,\ntestthat (>= 3.0.0), vctrs, curl, shinyOAuth",
+        "Config/rextendr/version": "0.4.2",
+        "Config/testthat/edition": "3",
+        "Encoding": "UTF-8",
+        "Language": "en",
+        "RoxygenNote": "7.3.3",
+        "SystemRequirements": "Cargo (Rust's package manager), rustc >= 1.67, xz",
+        "NeedsCompilation": "yes",
+        "Packaged": "2026-07-10 18:46:24 UTC; josiahparry",
+        "Author": "Josiah Parry [aut, cre] (ORCID:\n    <https://orcid.org/0000-0001-9910-865X>),\n  Kenneth Vernon [ctb] (ORCID: <https://orcid.org/0000-0003-0098-5092>),\n  Martha Bass [ctb] (ORCID: <https://orcid.org/0009-0004-0268-5426>),\n  Eli Pousson [ctb] (ORCID: <https://orcid.org/0000-0001-8280-1706>),\n  Ryan Zomorrodi [ctb] (ORCID: <https://orcid.org/0009-0003-6417-5985>)",
+        "Maintainer": "Josiah Parry <josiah.parry@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2026-07-10 23:20:08 UTC",
+        "Built": "R 4.5.3; x86_64-w64-mingw32; 2026-07-10 23:52:00 UTC; windows",
+        "Archs": "x64"
+      }
+    },
+    "arcpbf": {
+      "Source": "CRAN",
+      "Repository": "https://cloud.r-project.org",
+      "description": {
+        "Package": "arcpbf",
+        "Title": "Process ArcGIS Protocol Buffer FeatureCollections",
+        "Version": "0.2.0",
+        "Authors@R": "\n    person(\"Josiah\", \"Parry\", , \"josiah.parry@gmail.com\", role = c(\"aut\", \"cre\"),\n           comment = c(ORCID = \"0000-0001-9910-865X\"))",
+        "Description": "Fast processing of ArcGIS FeatureCollection protocol buffers in R.\n  It is designed to work seamlessly with 'httr2' and integrates with 'sf'. ",
+        "License": "Apache License (>= 2)",
+        "URL": "https://r.esri.com/arcpbf/, https://github.com/R-ArcGIS/arcpbf",
+        "BugReports": "https://github.com/R-ArcGIS/arcpbf/issues",
+        "Encoding": "UTF-8",
+        "Language": "en",
+        "RoxygenNote": "7.3.2",
+        "Config/rextendr/version": "0.3.1.9001",
+        "SystemRequirements": "Cargo (Rust's package manager), rustc >= 1.70",
+        "Suggests": "httr2, sf, testthat (>= 3.0.0)",
+        "Imports": "arcgisutils (>= 0.3.0), rlang",
+        "Config/testthat/edition": "3",
+        "Depends": "R (>= 4.2)",
+        "NeedsCompilation": "yes",
+        "Packaged": "2025-10-22 16:27:57 UTC; josiahparry",
+        "Author": "Josiah Parry [aut, cre] (ORCID:\n    <https://orcid.org/0000-0001-9910-865X>)",
+        "Maintainer": "Josiah Parry <josiah.parry@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-10-22 16:50:02 UTC",
+        "Built": "R 4.5.3; x86_64-w64-mingw32; 2026-07-08 03:56:32 UTC; windows",
+        "Archs": "x64"
+      }
+    },
     "askpass": {
       "Source": "CRAN",
       "Repository": "https://cloud.r-project.org",
@@ -1298,6 +1455,41 @@
         "RemoteSha": "0.1.4"
       }
     },
+    "jsonify": {
+      "Source": "CRAN",
+      "Repository": "https://cloud.r-project.org",
+      "description": {
+        "Package": "jsonify",
+        "Type": "Package",
+        "Title": "Convert Between 'R' Objects and Javascript Object Notation\n(JSON)",
+        "Version": "1.2.3",
+        "Date": "2025-11-24",
+        "Authors@R": "c(\n    person(\"David\", \"Cooley\", ,\"dcooley@symbolix.com.au\", role = c(\"aut\", \"cre\")),\n    person(\"Chris\", \"Muir\", role = \"ctb\"),\n    person(\"Brendan\", \"Knapp\", role = \"ctb\", comment = c(ORCID = \"0000-0003-3284-4972\"))\n    )",
+        "Description": "Conversions between 'R' objects and Javascript Object Notation (JSON) using \n    the 'rapidjsonr' library <https://CRAN.R-project.org/package=rapidjsonr>. ",
+        "License": "MIT + file LICENSE",
+        "Depends": "R (>= 4.0.0)",
+        "Imports": "Rcpp (>= 1.1.0)",
+        "LinkingTo": "rapidjsonr (>= 1.2.1), Rcpp",
+        "RoxygenNote": "7.3.2",
+        "Suggests": "covr, testthat, knitr, rmarkdown",
+        "Encoding": "UTF-8",
+        "URL": "https://symbolixau.github.io/jsonify/,\nhttps://github.com/SymbolixAU/jsonify",
+        "BugReports": "https://github.com/SymbolixAU/jsonify/issues",
+        "NeedsCompilation": "yes",
+        "Packaged": "2025-11-24 13:03:46 UTC; david",
+        "Author": "David Cooley [aut, cre],\n  Chris Muir [ctb],\n  Brendan Knapp [ctb] (ORCID: <https://orcid.org/0000-0003-3284-4972>)",
+        "Maintainer": "David Cooley <dcooley@symbolix.com.au>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-11-25 19:22:12 UTC",
+        "Built": "R 4.5.2; x86_64-w64-mingw32; 2026-02-18 01:45:00 UTC; windows",
+        "Archs": "x64",
+        "RemoteType": "standard",
+        "RemotePkgRef": "jsonify",
+        "RemoteRef": "jsonify",
+        "RemoteRepos": "https://cran.rstudio.com",
+        "RemoteSha": "1.2.3"
+      }
+    },
     "jsonlite": {
       "Source": "CRAN",
       "Repository": "https://cloud.r-project.org",
@@ -1945,6 +2137,35 @@
         "RemoteRef": "proxy",
         "RemoteRepos": "https://cran.rstudio.com",
         "RemoteSha": "0.4-29"
+      }
+    },
+    "rapidjsonr": {
+      "Source": "CRAN",
+      "Repository": "https://cloud.r-project.org",
+      "description": {
+        "Package": "rapidjsonr",
+        "Type": "Package",
+        "Title": "'Rapidjson' C++ Header Files",
+        "Version": "1.2.1",
+        "Date": "2025-11-23",
+        "Authors@R": "c(\n    person(\"David\", \"Cooley\", ,\"dcooley@symbolix.com.au\", role = c(\"aut\", \"cre\")),\n    person(\"Milo\", \"Yip\", , role = \"ctb\", comment = \"Author of c++ rapidjson library, provided through THL A29 Limited, a Tencent company\"),\n    person(\"Alexander\", \"Chemeris\", role = \"ctb\", comment = \"Author of c++ msinttypes library\")\n    )",
+        "Description": "Provides JSON parsing capability through the 'Rapidjson' 'C++' header-only library. ",
+        "License": "MIT + file LICENSE",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.1",
+        "SystemRequirements": "GNU make",
+        "NeedsCompilation": "no",
+        "Packaged": "2025-11-23 16:12:43 UTC; david",
+        "Author": "David Cooley [aut, cre],\n  Milo Yip [ctb] (Author of c++ rapidjson library, provided through THL\n    A29 Limited, a Tencent company),\n  Alexander Chemeris [ctb] (Author of c++ msinttypes library)",
+        "Maintainer": "David Cooley <dcooley@symbolix.com.au>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-11-24 08:50:07 UTC",
+        "Built": "R 4.5.2; ; 2025-12-03 00:54:34 UTC; windows",
+        "RemoteType": "standard",
+        "RemotePkgRef": "rapidjsonr",
+        "RemoteRef": "rapidjsonr",
+        "RemoteRepos": "https://cran.rstudio.com",
+        "RemoteSha": "1.2.1"
       }
     },
     "rappdirs": {
@@ -2837,17 +3058,48 @@
         "RemoteRepos": "https://cran.rstudio.com",
         "RemoteSha": "2.3.12"
       }
+    },
+    "yyjsonr": {
+      "Source": "CRAN",
+      "Repository": "https://cloud.r-project.org",
+      "description": {
+        "Package": "yyjsonr",
+        "Type": "Package",
+        "Title": "Fast 'JSON', 'NDJSON' and 'GeoJSON' Parser and Generator",
+        "Version": "0.1.22",
+        "Authors@R": "c(\n    person(\"Mike\", \"Cheng\", role = c(\"aut\", \"cre\", 'cph'), \n    email = \"mikefc@coolbutuseless.com\"),\n    person(\"Yao\", \"Yuan\", role = c(\"aut\", \"cph\"), email = \"ibireme@gmail.com\", \n    comment=\"Author of bundled yyjson\"),\n    person(\"Murat\", \"Tasan\", role = c(\"ctb\"), \n    comment=\"'json_verbatim' handling\")\n    )",
+        "Maintainer": "Mike Cheng <mikefc@coolbutuseless.com>",
+        "Description": "A fast 'JSON' parser, generator and validator which converts 'JSON', \n    'NDJSON' (Newline Delimited 'JSON') and 'GeoJSON' (Geographic 'JSON') data \n    to/from R objects.  The standard R data types are \n    supported (e.g. logical, numeric, integer) with configurable handling of NULL \n    and NA values. Data frames, atomic vectors and lists are all supported as data \n    containers translated to/from 'JSON'.  'GeoJSON' data is read in as\n    'simple features' objects.\n    This implementation wraps the 'yyjson' 'C' library which \n    is available from <https://github.com/ibireme/yyjson>.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://github.com/coolbutuseless/yyjsonr,\nhttps://coolbutuseless.github.io/package/yyjsonr/",
+        "BugReports": "https://github.com/coolbutuseless/yyjsonr/issues",
+        "Encoding": "UTF-8",
+        "Language": "en-AU",
+        "RoxygenNote": "7.3.3",
+        "Suggests": "bit64, knitr, rmarkdown, jsonlite, testthat (>= 3.0.0)",
+        "Config/testthat/edition": "3",
+        "VignetteBuilder": "knitr",
+        "Copyright": "The included 'yyjson' code is Copyright (c) 2020 YaoYuan.\nSee 'COPYRIGHTS' for LICENSE for included code.",
+        "Depends": "R (>= 4.1.0)",
+        "NeedsCompilation": "yes",
+        "Packaged": "2026-04-05 05:10:02 UTC; mike",
+        "Author": "Mike Cheng [aut, cre, cph],\n  Yao Yuan [aut, cph] (Author of bundled yyjson),\n  Murat Tasan [ctb] ('json_verbatim' handling)",
+        "Repository": "CRAN",
+        "Date/Publication": "2026-04-05 06:40:02 UTC",
+        "Built": "R 4.5.3; x86_64-w64-mingw32; 2026-07-08 01:08:25 UTC; windows",
+        "Archs": "x64"
+      }
     }
   },
   "files": {
     "app.R": {
-      "checksum": "39b6769365dee2110b218606b6cf41cf"
+      "checksum": "22b9d12674a14ecef8ba1e0a4ff64cbd"
     },
     "data/master_Data_TN.csv": {
-      "checksum": "3d96b1783102198e64ab07325faaf519"
+      "checksum": "e1c66454183be5855b72c4bd091b9a27"
     },
     "README.md": {
-      "checksum": "badfebe85cc1c3f8cfc11228b803ff05"
+      "checksum": "1fed7ad0554313d01cdc28146423679a"
     },
     "TN_City_Boundaries/TN_City_Boundaries.cpg": {
       "checksum": "ae3b3df9970b49b6523e608759bc957d"
@@ -2871,7 +3123,7 @@
       "checksum": "a987b8a9f6004b130913100eaada7258"
     },
     "www/styles.css": {
-      "checksum": "9a8d1957c00d9c39857f747e9482b087"
+      "checksum": "640e5d98e85b10b158fbcd60ff720df2"
     },
     "www/TDOT_logo.png": {
       "checksum": "c18678e21751e96eca09a442544bd83c"
