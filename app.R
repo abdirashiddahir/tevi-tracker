@@ -350,8 +350,12 @@ reset_review <- function(id) {
 #              default https://hntbcorp.maps.arcgis.com)
 #   3. editing enabled on the layers + install.packages(c("arcgislayers","sf"))
 # See the field-guide "Build sheet: TN ArcGIS wiring" for the security/view model.
-ARC_SVC <- paste0("https://services.arcgis.com/rD2ylXRs80UroD90/arcgis/rest/",
-                  "services/TEVI_Out_of_State_NEVI_Compliant_Open/FeatureServer")
+# The tracker WRITES to an org-only EDITABLE VIEW — never the public source — so the
+# public source layer (read by the web map) stays read-only and safe from anonymous
+# edits. Override with ARC_SVC_URL if the view is ever recreated at a new URL.
+ARC_SVC <- Sys.getenv("ARC_SVC_URL", paste0(
+  "https://services.arcgis.com/rD2ylXRs80UroD90/arcgis/rest/services/",
+  "TEVI_Creditable_-_Tracker_(editable)/FeatureServer"))
 ARC_LAYER <- list(coming_soon = paste0(ARC_SVC, "/0"),   # String port fields
                   open        = paste0(ARC_SVC, "/1"))   # Integer port fields
 
