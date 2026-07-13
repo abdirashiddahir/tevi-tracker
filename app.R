@@ -1500,6 +1500,9 @@ server <- function(input, output, session) {
       nm  <- row$station_name
       reset_review(id); rv$track <- read_tracking()  # local: back to "needs review"
       delete_operational(id)                         # API: drop it (Scenario clears on refresh)
+      tryCatch(sync_to_arcgis(),                      # revert the public map too (Open -> Coming Soon)
+               error = function(e) showNotification(
+                 paste("ArcGIS sync failed:", conditionMessage(e)), type = "error"))
       showNotification(HTML(paste0("<b>", htmlEscape(nm), "</b> reset to Coming Soon.<br>",
         "<span style='font-size:11px'>Returned to the review queue &amp; removed from the status API — ",
         "the Scenario tool drops it on its next refresh.</span>")),
