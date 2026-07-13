@@ -343,8 +343,11 @@ reset_review <- function(id) {
 # the two TDOT hosted feature layers so the public web map stays current.
 # COMPLETELY INERT until ALL of these are true (nothing runs otherwise):
 #   1. env  ARC_SYNC_ENABLED=true   (the master switch — default off)
-#   2. env  ARC_CLIENT_ID / ARC_CLIENT_SECRET  (an ArcGIS OAuth app with EDIT rights)
-#      optional ARC_PORTAL (default https://hntbcorp.maps.arcgis.com)
+#   2. credentials with EDIT rights on the layer — EITHER (simplest)
+#         env  ARC_API_KEY            (an ArcGIS API key scoped to edit the layer)
+#      OR an OAuth app credential
+#         env  ARC_CLIENT_ID / ARC_CLIENT_SECRET  (optional ARC_PORTAL,
+#              default https://hntbcorp.maps.arcgis.com)
 #   3. editing enabled on the layers + install.packages(c("arcgislayers","sf"))
 # See the field-guide "Build sheet: TN ArcGIS wiring" for the security/view model.
 ARC_SVC <- paste0("https://services.arcgis.com/rD2ylXRs80UroD90/arcgis/rest/",
@@ -383,11 +386,17 @@ sync_to_arcgis <- function() {
   cs   <- build(raw[raw$data_source == "Coming_Soon", ],     FALSE)   # Layer 0
   open <- build(raw[raw$data_source == "Open_Creditable", ], TRUE)    # Layer 1
 
-  # 3) authenticate (app credential) + replace each layer's features
-  arcgislayers::set_arc_token(arcgisutils::auth_client(
-    client_id     = Sys.getenv("ARC_CLIENT_ID"),
-    client_secret = Sys.getenv("ARC_CLIENT_SECRET"),
-    host          = Sys.getenv("ARC_PORTAL", "https://hntbcorp.maps.arcgis.com")))
+  # 3) authenticate + replace each layer's features. Prefer an API key (simplest —
+  #    scope "edit features" to the layer); fall back to an OAuth app credential.
+  tok <- if (nzchar(Sys.getenv("ARC_API_KEY"))) {
+    arcgisutils::auth_key(Sys.getenv("ARC_API_KEY"))
+  } else {
+    arcgisutils::auth_client(
+      client_id     = Sys.getenv("ARC_CLIENT_ID"),
+      client_secret = Sys.getenv("ARC_CLIENT_SECRET"),
+      host          = Sys.getenv("ARC_PORTAL", "https://hntbcorp.maps.arcgis.com"))
+  }
+  arcgislayers::set_arc_token(tok)
   push <- function(url, sfx) {
     if (is.null(sfx)) return(invisible())
     lyr <- arcgislayers::arc_open(url)
