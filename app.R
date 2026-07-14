@@ -504,7 +504,7 @@ status_class <- function(op, ps) ifelse(grepl("Existing", ps), "dcfc",
 status_color <- function(cls) c(op = INDOT$green, cs = INDOT$teal, nf = INDOT$brown,
                                 ur = INDOT$red, rv = INDOT$amber, nc = INDOT$newcs,
                                 awarded = INDOT$navy, dcfc = "#3a3a3a")[cls]  # small dark context dots
-status_label <- function(op, ps) ifelse(grepl("Existing", ps), "Existing DCFC",
+status_label <- function(op, ps) ifelse(grepl("Existing", ps), "Existing non-TEVI Creditable",
   ifelse(grepl("Awarded", ps), "Awarded",
   ifelse(op == "Yes", "Operational",
   ifelse(ps == "", "Coming Soon", ps))))
@@ -513,7 +513,7 @@ status_label <- function(op, ps) ifelse(grepl("Existing", ps), "Existing DCFC",
 # Layer/type labels — kept consistent with the TDOT ArcGIS web map legend.
 TYPE_LABELS <- c("Coming_Soon" = "Creditable Stations (Coming Soon)",
                  "NEVI Awarded Sites" = "TEVI Round 1 Award Stations",
-                 "Open_Creditable" = "Creditable Stations (Open)", "Other_DCFC" = "Existing DCFC")
+                 "Open_Creditable" = "Creditable Stations (Open)", "Other_DCFC" = "Existing non-TEVI Creditable")
 type_label <- function(ds) {
   ds <- as.character(ds); lbl <- unname(TYPE_LABELS[ds])
   ifelse(is.na(lbl), ifelse(nzchar(ds), ds, "Coming Soon"), lbl)
@@ -713,20 +713,19 @@ theme_app <- bs_theme(version = 5, bootswatch = "flatly",
   info = INDOT$teal, danger = INDOT$red,
   base_font = font_google("Inter"), heading_font = font_google("Inter"), font_scale = 0.95)
 
+# Value-box titles match the status filter + map-legend labels exactly.
 kpi_row <- function() layout_columns(col_widths = NULL, fill = FALSE,
-  value_box("Tracked", textOutput("kpi_total", inline = TRUE),
-            showcase = bs_icon("ev-station-fill"), theme = value_box_theme(bg = INDOT$navy, fg = "white")),
-  value_box("Creditable · Open", textOutput("kpi_op", inline = TRUE),
+  value_box("Creditable Stations (Open)", textOutput("kpi_op", inline = TRUE),
             showcase = bs_icon("check-circle-fill"), theme = value_box_theme(bg = INDOT$green, fg = "white")),
-  value_box("Creditable · Coming Soon", textOutput("kpi_cs", inline = TRUE),
+  value_box("Creditable Stations (Coming Soon)", textOutput("kpi_cs", inline = TRUE),
             showcase = bs_icon("clock-fill"), theme = value_box_theme(bg = INDOT$teal, fg = "white")),
   value_box("New Coming-Soon", textOutput("kpi_nc", inline = TRUE),
             showcase = bs_icon("plus-circle-fill"), theme = value_box_theme(bg = INDOT$newcs, fg = "white")),
   value_box("Needs Review", textOutput("kpi_review", inline = TRUE),
             showcase = bs_icon("exclamation-triangle-fill"), theme = value_box_theme(bg = INDOT$amber, fg = "white")),
-  value_box("Award Stations", textOutput("kpi_awarded", inline = TRUE),
+  value_box("TEVI Round 1 Award Stations", textOutput("kpi_awarded", inline = TRUE),
             showcase = bs_icon("award-fill"), theme = value_box_theme(bg = INDOT$navy, fg = "white")),
-  value_box("Existing DCFC", textOutput("kpi_dcfc", inline = TRUE),
+  value_box("Existing non-TEVI Creditable", textOutput("kpi_dcfc", inline = TRUE),
             showcase = bs_icon("ev-station"), theme = value_box_theme(bg = INDOT$gray, fg = "white")))
 
 # Manual "Sync to ArcGIS map" control — only appears once sync is switched on
@@ -749,7 +748,7 @@ app_sidebar <- sidebar(width = 300, title = "Filters & actions", open = "open",
       choices  = c("Creditable Stations (Open)"        = "Operational",
                    "Creditable Stations (Coming Soon)" = "Coming Soon",
                    "TEVI Round 1 Award Stations"       = "Awarded",
-                   "Existing DCFC"                     = "Existing DCFC",
+                   "Existing non-TEVI Creditable"      = "Existing DCFC",
                    "Under Repair"                      = "Under Repair",
                    "Not found"                         = "Not found"),
       # "Existing DCFC" is context — OFF by default; toggle it on to see existing chargers.
@@ -800,7 +799,7 @@ main_ui <- page_navbar(
                         "Creditable Stations (Open)" = "Open_Creditable",
                         "Creditable Stations (Coming Soon)" = "Coming_Soon",
                         "TEVI Round 1 Award Stations" = "NEVI Awarded Sites",
-                        "Existing DCFC" = "Other_DCFC"), selected = "all")),
+                        "Existing non-TEVI Creditable" = "Other_DCFC"), selected = "all")),
         helpText("Double-click PlugShare status / Operational / Network / Ports / Notes to edit."),
         withSpinner(DTOutput("tbl"), color = INDOT$navy, type = 8)))),
 
@@ -867,7 +866,7 @@ main_ui <- page_navbar(
                         choices = c("Creditable Stations (Coming Soon)" = "Coming_Soon",
                                     "TEVI Round 1 Award Stations" = "NEVI Awarded Sites",
                                     "Creditable Stations (Open)" = "Open_Creditable",
-                                    "Existing DCFC" = "Other_DCFC")),
+                                    "Existing non-TEVI Creditable" = "Other_DCFC")),
             conditionalPanel("input.ns_type == 'Coming_Soon'",   # confidence only for Coming Soon
               selectInput("ns_conf", "Confidence level",
                           choices = CONF_CHOICES, selected = "Medium"))),
@@ -972,7 +971,7 @@ main_ui <- page_navbar(
         div(class = "about-h", bs_icon("palette-fill"), tags$span("Map colors")),
         tags$p(class = "about-lead",
           tags$b("Status:"), " Operational (green), Awarded (navy), ",
-          "Needs Review (amber), Existing DCFC (charcoal, off by default). ", tags$b("Coming-Soon stations"),
+          "Needs Review (amber), Existing non-TEVI Creditable (charcoal, off by default). ", tags$b("Coming-Soon stations"),
           " are colored by confidence - High/Constructed (crimson), Medium/Plans Exist (yellow), ",
           "Low/Announced (gray) - with their own legend on the map. The state outline is black."),
         tags$p(class = "about-lead",
@@ -1205,7 +1204,7 @@ server <- function(input, output, session) {
         label = lapply(m$station_name, HTML)) %>%
         addLegend("topright",
           colors = c(INDOT$green, INDOT$navy, INDOT$amber, "#3a3a3a"),
-          labels = c("Creditable Stations (Open)","TEVI Round 1 Award Stations","Needs Review","Existing DCFC"),
+          labels = c("Creditable Stations (Open)","TEVI Round 1 Award Stations","Needs Review","Existing non-TEVI Creditable"),
           title = "Status", opacity = .9, className = "info legend status-legend")
       # Coming-Soon stations are colored by CONFIDENCE (not one flat status color), so their
       # key lives in its own legend — shown whenever any coming-soon (master `cs` or added `nc`)
@@ -1658,7 +1657,7 @@ server <- function(input, output, session) {
                         choices = c("Coming Soon" = "Coming_Soon",
                                     "NEVI Awarded" = "NEVI Awarded Sites",
                                     "Open (Creditable)" = "Open_Creditable",
-                                    "Existing DCFC" = "Other_DCFC"),
+                                    "Existing non-TEVI Creditable" = "Other_DCFC"),
                         selected = if (nzchar(r$data_source %||% "")) r$data_source else "Coming_Soon"),
             conditionalPanel(paste0("input['e_type_", id, "'] == 'Coming_Soon'"),
               selectInput(paste0("e_conf_", id), "Confidence",
@@ -1747,7 +1746,7 @@ server <- function(input, output, session) {
                               htmlEscape(all$disp)), HTML)) %>%
       addLegend("topright",
         colors = c(INDOT$green, INDOT$navy, INDOT$amber, "#3a3a3a"),
-        labels = c("Creditable Stations (Open)","TEVI Round 1 Award Stations","Needs Review","Existing DCFC"),
+        labels = c("Creditable Stations (Open)","TEVI Round 1 Award Stations","Needs Review","Existing non-TEVI Creditable"),
         title = "Status", opacity = .9, className = "info legend status-legend") %>%
       {if (any(all$cls %in% c("cs","nc"), na.rm = TRUE))
          addLegend(., "topright",
